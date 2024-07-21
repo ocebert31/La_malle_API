@@ -11,3 +11,14 @@ exports.createArticle = (req, res) => {
     .then(article => { res.status(200).json({ article })})
     .catch(error => { res.status(400).json( { error })})
 };
+
+exports.getAllArticles = (req, res) => {
+    const { page = 1, limit = 20 } = req.query; 
+    Article.find()
+        .select('title imageUrl')
+        .sort({createdAt: -1})
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .then(articles => res.status(200).json(articles))
+        .catch(error => res.status(400).json({ error }));
+};
