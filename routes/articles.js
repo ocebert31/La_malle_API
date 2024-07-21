@@ -6,6 +6,7 @@ const uploadImage = require('../middlewares/uploadImage');
 router.post('/', uploadImage.single('image'), articleController.createArticle);
 router.get('/',articleController.getAllArticles);
 router.get('/:id',articleController.getOneArticle);
+router.put('/:id', uploadImage.single('image'), articleController.modifyArticle);
 router.delete('/:id', articleController.deleteArticle);
 
 module.exports = router;

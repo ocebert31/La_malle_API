@@ -46,3 +46,25 @@ exports.getOneArticle =  (req, res) => {
         })
         .catch(error => res.status(500).json({ error: error.message }));
 };
+
+exports.modifyArticle = (req, res) => {
+    const update = {
+        title: req.body.title,
+        content: req.body.content
+    };
+    if (req.file) {
+        update.imageUrl = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
+    }
+    Article.findOneAndUpdate(
+        { _id: req.params.id },
+        { ...update, _id: req.params.id },
+        { new: true }
+    )
+    .then((updatedArticle) => {
+        if (!updatedArticle) {
+            return res.status(404).json({ message: 'Article non trouvé' });
+        }
+        res.status(200).json({ article: updatedArticle });
+    })
+    .catch((error) => res.status(400).json({ error: error.message }));
+};
