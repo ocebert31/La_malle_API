@@ -1,4 +1,5 @@
 const Article = require('../models/articles')
+const fs = require('fs');
 
 exports.createArticle = (req, res) => {
     const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null;
@@ -28,3 +29,20 @@ exports.getOneArticle =  (req, res) => {
         .then(article => res.status(200).json(article))
         .catch(error => res.status(404).json({ error }));
 }
+
+ exports.deleteArticle = (req, res) => {
+    const articleId = req.params.id;
+    Article.findOne({ _id: articleId })
+        .then(article => {
+            if (!article) {
+                return res.status(404).json({ message: 'Article non trouvé' });
+            }
+            const filename = article.imageUrl.split('/images/')[1];
+            fs.unlink(`images/${filename}`, () => {
+                Article.deleteOne({ _id: articleId })
+                    .then(() => res.status(200).json({ message: 'Article supprimé !' }))
+                    .catch(error => res.status(500).json({ error: error.message }));
+            });
+        })
+        .catch(error => res.status(500).json({ error: error.message }));
+};
