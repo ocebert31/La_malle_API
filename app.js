@@ -6,6 +6,7 @@ const articlesRoutes = require('./routes/articles');
 const path = require('path');
 const errorHandler = require('./middlewares/errorHandler');
 const usersRoutes = require('./routes/users');
+require('dotenv').config()
 
 mongoose.connect('mongodb+srv://oceane_bert:j02X1qhtiQkDIOjF@cluster1.fvu9kvo.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1')
   .then(() => console.log('Connexion à MongoDB réussie !'))
