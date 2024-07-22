@@ -2,6 +2,9 @@ const Article = require('../models/articles')
 const fs = require('fs');
 
 exports.createArticle = (req, res) => {
+    if(!req.auth) {
+        return res.status(403).json({ message: 'Requête non autorisée' });
+    }
     const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null;
     const article = new Article({
         title: req.body.title,
@@ -33,14 +36,13 @@ exports.getOneArticle =  (req, res) => {
 
 exports.deleteArticle = (req, res) => {
     const articleId = req.params.id;
-    const userId = req.auth.userId; 
 
     Article.findOne({ _id: articleId })
         .then(article => {
             if (!article) {
                 return res.status(404).json({ message: 'Article non trouvé' });
             }
-            if (article.userId.toString() !== userId) {
+            if (hasAccessToArticle(article, req.auth)) {
                 return res.status(403).json({ message: 'Requête non autorisée' });
             }
             const filename = article.imageUrl.split('/images/')[1];
@@ -51,15 +53,13 @@ exports.deleteArticle = (req, res) => {
         })
 };
 
-exports.modifyArticle = (req, res) => {
-    const userId = req.auth.userId;
-
+exports.updateArticle = (req, res) => {
     Article.findOne({ _id: req.params.id })
         .then(article => {
             if (!article) {
                 return res.status(404).json({ message: 'Article non trouvé' });
             }
-            if (article.userId.toString() !== userId) {
+            if (hasAccessToArticle(article, req.auth)) {
                 return res.status(403).json({ message: 'Requête non autorisée' });
             }
 
@@ -88,3 +88,6 @@ exports.modifyArticle = (req, res) => {
         .catch((error) => res.status(500).json({ error: error.message }));
 };
 
+function hasAccessToArticle(article, auth) {
+    return article.userId.toString() !== auth.userId && auth.role !== 'admin';
+}

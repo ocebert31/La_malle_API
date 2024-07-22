@@ -7,7 +7,7 @@ const auth = require('../middlewares/auth');
 router.post('/',auth ,uploadImage.single('image'), articleController.createArticle);
 router.get('/',articleController.getAllArticles);
 router.get('/:id',articleController.getOneArticle);
-router.put('/:id',auth ,uploadImage.single('image'), articleController.modifyArticle);
+router.put('/:id',auth ,uploadImage.single('image'), articleController.updateArticle);
 router.delete('/:id',auth ,articleController.deleteArticle);
 
 module.exports = router;

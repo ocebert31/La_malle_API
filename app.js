@@ -7,9 +7,13 @@ const path = require('path');
 const errorHandler = require('./middlewares/errorHandler');
 const usersRoutes = require('./routes/users');
 require('dotenv').config()
+const createAdmin = require('./config/initAdmin')
 
-mongoose.connect('mongodb+srv://oceane_bert:j02X1qhtiQkDIOjF@cluster1.fvu9kvo.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1')
-  .then(() => console.log('Connexion à MongoDB réussie !'))
+mongoose.connect(process.env.CONNECT_MONGO_DB)
+  .then(() => {
+    console.log('Connexion à MongoDB réussie !')
+    createAdmin();
+  })
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 app.use(express.json());
