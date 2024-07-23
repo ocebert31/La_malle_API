@@ -18,8 +18,9 @@ exports.createArticle = (req, res) => {
 };
 
 exports.getAllArticles = (req, res) => {
-    const { page = 1, limit = 20 } = req.query; 
-    Article.find()
+    const { searchQuery = '', page = 1, limit = 20 } = req.query;
+    const filter = searchQuery ? { title: { $regex: searchQuery, $options: 'i' } } : {};
+    Article.find(filter)
         .select('title imageUrl')
         .sort({createdAt: -1})
         .skip((page - 1) * limit)
