@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const User = require('../models/users');
 const jwt = require('jsonwebtoken');
+const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-names-generator');
 
 exports.registration = (req, res, next) => {
     User.findOne({ email: req.body.email })
@@ -13,9 +14,16 @@ exports.registration = (req, res, next) => {
             } 
             bcrypt.hash(req.body.password, 10)
                 .then(hash => {
+                    const pseudo = uniqueNamesGenerator({
+                        dictionaries: [colors, adjectives, animals],
+                        length: 3,
+                        separator: '_'
+                    });
+                    
                     const user = new User({
                         email: req.body.email,
-                        password: hash
+                        password: hash,
+                        pseudo: pseudo
                     });
                     user.save()
                         .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
@@ -44,7 +52,7 @@ exports.session = (req, res, next) => {
                     res.status(200).json({
                         user: user,
                         token: jwt.sign(
-                            { userId: user._id, role: user.role },
+                            { userId: user._id, role: user.role, pseudo: user.pseudo },
                             process.env.AUTH_TOKEN,
                             { expiresIn: '24h' },
                         )

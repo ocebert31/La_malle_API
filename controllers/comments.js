@@ -9,12 +9,39 @@ exports.createComments = async(req, res) => {
 
     comment.save()
     .then(comment => { res.status(200).json({ comment })})
-    .catch(error => {res.status(400).json( { error })})
+    .catch(error => {console.error(error),res.status(400).json( { error })})
 }
 
-exports.getAllComments = (req, res) => {
+exports.getAllComments = async (req, res) => {
     const articleId = req.query.articleId;
-    Comment.find({ articleId: articleId })
-        .then(comments => res.status(200).json(comments))
-        .catch(error => res.status(400).json({ error }));
+    try {
+        const comments = await Comment.aggregate([
+            {
+                $match: { articleId: articleId }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            {
+                $unwind: { path: '$user', preserveNullAndEmptyArrays: true }
+            },
+            {
+                $project: {
+                    content: 1,
+                    articleId: 1,
+                    pseudo: '$user.pseudo',
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
+        res.status(200).json(comments);
+    } catch (error) {
+        res.status(400).json({ error });
+    }
 };
