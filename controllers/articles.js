@@ -43,7 +43,7 @@ exports.deleteArticle = (req, res) => {
             if (!article) {
                 return res.status(404).json({ message: 'Article non trouvé' });
             }
-            if (hasAccessToArticle(article, req.auth)) {
+            if (!hasAccessToArticle(article, req.auth)) {
                 return res.status(403).json({ message: 'Requête non autorisée' });
             }
             const filename = article.imageUrl.split('/images/')[1];
@@ -60,7 +60,7 @@ exports.updateArticle = (req, res) => {
             if (!article) {
                 return res.status(404).json({ message: 'Article non trouvé' });
             }
-            if (hasAccessToArticle(article, req.auth)) {
+            if (!hasAccessToArticle(article, req.auth)) {
                 return res.status(403).json({ message: 'Requête non autorisée' });
             }
 
@@ -90,5 +90,5 @@ exports.updateArticle = (req, res) => {
 };
 
 function hasAccessToArticle(article, auth) {
-    return article.userId.toString() !== auth.userId && auth.role !== 'admin';
+    return article.userId.toString() === auth.userId || auth.role === 'admin';
 }
