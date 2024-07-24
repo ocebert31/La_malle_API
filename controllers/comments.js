@@ -1,4 +1,5 @@
 const Comment = require('../models/comments');
+const mongoose = require('mongoose');
 
 exports.createComments = async(req, res) => {
     const comment = new Comment({
@@ -14,6 +15,7 @@ exports.createComments = async(req, res) => {
 
 exports.getAllComments = async (req, res) => {
     const articleId = req.query.articleId;
+    const userId = req.auth && req.auth.userId ? new mongoose.Types.ObjectId(req.auth.userId): null;
     try {
         const comments = await Comment.aggregate([
             {
@@ -28,7 +30,53 @@ exports.getAllComments = async (req, res) => {
                 }
             },
             {
+                $lookup: {
+                    from: 'votes',
+                    localField: '_id',
+                    foreignField: 'commentId',
+                    as: 'votes'
+                }
+            },
+            {
                 $unwind: { path: '$user', preserveNullAndEmptyArrays: true }
+            },
+            {
+                $addFields: {
+                    upvotes: {
+                        $size: {
+                            $filter: {
+                                input: '$votes',
+                                as: 'vote',
+                                cond: { $eq: ['$$vote.voteType', 'upvote'] }
+                            }
+                        }
+                    },
+                    downvotes: {
+                        $size: {
+                            $filter: {
+                                input: '$votes',
+                                as: 'vote',
+                                cond: { $eq: ['$$vote.voteType', 'downvote'] }
+                            }
+                        }
+                    },
+                    userVotes: userId ? {
+                        $let: {
+                            vars: {
+                                filteredVotes: {
+                                    $filter: {
+                                        input: '$votes',
+                                        as: 'vote',
+                                        cond: { $eq: ['$$vote.userId', userId] }
+                                    }
+                                }
+                            },
+                            in: {
+                                $arrayElemAt: ['$$filteredVotes', 0]
+                            }
+                        }
+                    } : null
+                }
             },
             {
                 $project: {
@@ -37,7 +85,10 @@ exports.getAllComments = async (req, res) => {
                     userId: 1,
                     pseudo: '$user.pseudo',
                     createdAt: 1,
-                    updatedAt: 1
+                    updatedAt: 1,
+                    upvotes: 1,
+                    downvotes: 1,
+                    userVote: userId ? { voteType: '$userVotes.voteType' } : null
                 }
             }
         ]);

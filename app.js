@@ -9,6 +9,7 @@ const usersRoutes = require('./routes/users');
 require('dotenv').config()
 const createAdmin = require('./config/initAdmin')
 const commentsRoutes = require('./routes/comment');
+const votesRoutes = require('./routes/votes');
 
 mongoose.connect(process.env.CONNECT_MONGO_DB)
   .then(() => {
@@ -29,6 +30,7 @@ app.use((req, res, next) => {
 app.use('/articles', articlesRoutes);
 app.use('/auth', usersRoutes);
 app.use('/comments', commentsRoutes);
+app.use('/votes', votesRoutes);
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(errorHandler);
 
