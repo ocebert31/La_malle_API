@@ -116,7 +116,6 @@ exports.deleteComment = (req, res) => {
 };
 
 exports.updateComment = (req, res) => {
-    console.log(req.body)
     Comment.findOne({ _id: req.params.id })
         .then(comment => {
             if (!comment) {
