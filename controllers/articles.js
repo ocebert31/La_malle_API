@@ -1,5 +1,6 @@
 const Article = require('../models/articles')
 const fs = require('fs');
+const mongoose = require('mongoose');
 
 exports.createArticle = (req, res) => {
     if(!req.auth) {
@@ -20,19 +21,63 @@ exports.createArticle = (req, res) => {
 exports.getAllArticles = (req, res) => {
     const { searchQuery = '', page = 1, limit = 20 } = req.query;
     const filter = searchQuery ? { title: { $regex: searchQuery, $options: 'i' } } : {};
-    Article.find(filter)
-        .select('title imageUrl')
-        .sort({createdAt: -1})
-        .skip((page - 1) * limit)
-        .limit(limit)
+    Article.aggregate([
+        { $match: filter },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'userId',
+                foreignField: '_id',
+                as: 'user'
+            }
+        },
+        { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+        {
+            $project: {
+                title: 1,
+                imageUrl: 1,
+                content: 1,
+                createdAt: 1,
+                pseudo: '$user.pseudo',
+            }
+        },
+        { $sort: { createdAt: -1 } },
+        { $skip: (page - 1) * limit },
+        { $limit: parseInt(limit) }
+    ])
         .then(articles => res.status(200).json(articles))
-        .catch(error => res.status(400).json({ error }));
+        .catch(error => { console.error(error); return res.status(400).json({ error }) });
 };
  
 exports.getOneArticle =  (req, res) => {
-    Article.findOne({ _id: req.params.id })
-        .then(article => res.status(200).json(article))
-        .catch(error => res.status(404).json({ error }));
+    Article.aggregate([
+        { $match: { _id: new mongoose.Types.ObjectId(req.params.id) } },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'userId',
+                foreignField: '_id',
+                as: 'user'
+            }
+        },
+        { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+        {
+            $project: {
+                title: 1,
+                imageUrl: 1,
+                content: 1,
+                createdAt: 1,
+                userId: 1,
+                pseudo: '$user.pseudo',
+            }
+        }
+    ]).then(articles => {
+        if (!articles.length) {
+            return res.status(404).json({ message: 'Article non trouvé' });
+        }
+        res.status(200).json(articles[0]);
+    })
+
 }
 
 exports.deleteArticle = (req, res) => {
