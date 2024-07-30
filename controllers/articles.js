@@ -1,6 +1,7 @@
 const Article = require('../models/articles')
 const fs = require('fs');
 const mongoose = require('mongoose');
+const Favorite = require('../models/favorites'); 
 
 exports.createArticle = (req, res) => {
     if(!req.auth) {
@@ -49,7 +50,12 @@ exports.getAllArticles = (req, res) => {
         .catch(error => { console.error(error); return res.status(400).json({ error }) });
 };
  
-exports.getOneArticle =  (req, res) => {
+exports.getOneArticle =  async (req, res) => {
+    let favorite = null;
+    console.log(req.auth)
+    if(req.auth) {
+        favorite = await Favorite.findOne({ userId: req.auth.userId, articleId: req.params.id });
+    }
     Article.aggregate([
         { $match: { _id: new mongoose.Types.ObjectId(req.params.id) } },
         {
@@ -75,9 +81,8 @@ exports.getOneArticle =  (req, res) => {
         if (!articles.length) {
             return res.status(404).json({ message: 'Article non trouvé' });
         }
-        res.status(200).json(articles[0]);
+        res.status(200).json({...articles[0], favorite});
     })
-
 }
 
 exports.deleteArticle = (req, res) => {
