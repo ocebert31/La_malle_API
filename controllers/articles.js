@@ -19,40 +19,61 @@ exports.createArticle = (req, res) => {
     .catch(error => { res.status(400).json( { error })})
 };
 
-exports.getAllArticles = (req, res) => {
-    const { searchQuery = '', page = 1, limit = 20 } = req.query;
-    const filter = searchQuery ? { title: { $regex: searchQuery, $options: 'i' } } : {};
-    Article.aggregate([
-        { $match: filter },
-        {
-            $lookup: {
-                from: 'users',
-                localField: 'userId',
-                foreignField: '_id',
-                as: 'user'
-            }
-        },
-        { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
-        {
-            $project: {
-                title: 1,
-                imageUrl: 1,
-                content: 1,
-                createdAt: 1,
-                pseudo: '$user.pseudo',
-            }
-        },
-        { $sort: { createdAt: -1 } },
-        { $skip: (page - 1) * limit },
-        { $limit: parseInt(limit) }
-    ])
-        .then(articles => res.status(200).json(articles))
-        .catch(error => { console.error(error); return res.status(400).json({ error }) });
+exports.getAllArticles = async (req, res) => {
+    const { searchQuery = '', page = 1, limit = 20, type = 'all' } = req.query;
+    try {
+        const currentPage = parseInt(page, 10);
+        const articlesLimit = parseInt(limit, 10);
+        let matchStage = {};
+        if (type === 'favorites' && req.auth) {
+            const favoriteArticles = await Favorite.find({ userId: req.auth.userId }).populate('articleId');
+            const favoriteArticleIds = favoriteArticles
+            .filter(favorite => favorite.articleId)
+            .map(favorite => favorite.articleId._id); 
+            matchStage = searchQuery ? { 
+                _id: { $in: favoriteArticleIds },
+                title: { $regex: searchQuery, $options: 'i' }
+            } : { 
+                _id: { $in: favoriteArticleIds } 
+            };
+        } else {
+            matchStage = searchQuery ? { 
+                title: { $regex: searchQuery, $options: 'i' } 
+            } : {};
+        }
+        const articles = await Article.aggregate([
+            { $match: matchStage },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    title: 1,
+                    imageUrl: 1,
+                    content: 1,
+                    createdAt: 1,
+                    pseudo: '$user.pseudo',
+                }
+            },
+            { $sort: { createdAt: -1 } },
+            { $skip: (currentPage - 1) * articlesLimit },
+            { $limit: articlesLimit }
+        ]);
+        res.status(200).json(articles);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
 };
  
 exports.getOneArticle =  async (req, res) => {
     let favorite = null;
-    console.log(req.auth)
     if(req.auth) {
         favorite = await Favorite.findOne({ userId: req.auth.userId, articleId: req.params.id });
     }
