@@ -16,6 +16,7 @@ exports.createArticle = (req, res) => {
     });
     article.save()
     .then(article => { res.status(200).json({ article })})
+    
     .catch(error => { res.status(400).json( { error })})
 };
 

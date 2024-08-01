@@ -12,3 +12,5 @@ router.put('/:id', auth, authenticated, uploadImage.single('image'), articleCont
 router.delete('/:id', auth, authenticated, articleController.deleteArticle);
 
 module.exports = router;
+
+
