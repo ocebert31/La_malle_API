@@ -5,9 +5,10 @@ exports.createComments = async(req, res) => {
     const comment = new Comment({
         content: req.body.content,
         articleId: req.body.articleId,
-        userId: req.auth.userId
+        userId: req.auth.userId,
+        commentId: req.body.commentId
     });
-
+    console.log(req)
     comment.save()
     .then(comment => { res.status(200).json({ comment })})
     .catch(error => {console.error(error),res.status(400).json( { error })})
@@ -20,6 +21,9 @@ exports.getAllComments = async (req, res) => {
         const comments = await Comment.aggregate([
             {
                 $match: { articleId: articleId }
+            },
+            {
+                $sort: { createdAt: 1 }
             },
             {
                 $lookup: {
@@ -83,12 +87,14 @@ exports.getAllComments = async (req, res) => {
                     content: 1,
                     articleId: 1,
                     userId: 1,
+                    commentId: 1,
                     pseudo: '$user.pseudo',
                     createdAt: 1,
                     updatedAt: 1,
+                    deletedAt: 1,
                     upvotes: 1,
                     downvotes: 1,
-                    userVote: userId ? { voteType: '$userVotes.voteType' } : null
+                    userVote: userId ? { voteType: '$userVotes.voteType' } : null,
                 }
             }
         ]);
@@ -98,8 +104,26 @@ exports.getAllComments = async (req, res) => {
     }
 };
 
+// exports.deleteComment = (req, res) => {
+//     const commentId = req.params.id;
+//     Comment.findOne({ _id: commentId })
+//         .then(comment => {
+//             if (!comment) {
+//                 return res.status(404).json({ message: 'Commentaire non trouvé' });
+//             }
+//             if (!hasAccessToComment(comment, req.auth)) {
+//                 return res.status(403).json({ message: 'Requête non autorisée' });
+//             }
+//             Comment.deleteOne({ _id: commentId })
+//                 .then(() => res.status(200).json({ message: 'Commentaire supprimé !' }))
+//                 .catch(error => res.status(400).json({ error }));
+//         })
+//         .catch(error => res.status(400).json({ error }));
+// };
+
 exports.deleteComment = (req, res) => {
     const commentId = req.params.id;
+
     Comment.findOne({ _id: commentId })
         .then(comment => {
             if (!comment) {
@@ -108,12 +132,22 @@ exports.deleteComment = (req, res) => {
             if (!hasAccessToComment(comment, req.auth)) {
                 return res.status(403).json({ message: 'Requête non autorisée' });
             }
-            Comment.deleteOne({ _id: commentId })
-                .then(() => res.status(200).json({ message: 'Commentaire supprimé !' }))
+
+            // Vérifier si le commentaire a des réponses
+            Comment.find({ commentId: commentId })
+                .then(replies => {
+                    Comment.updateOne(
+                        { _id: commentId },
+                        { deletedAt: new Date()}
+                    )
+                        .then(() => res.status(200).json({ message: 'Commentaire supprimé' }))
+                        .catch(error => res.status(400).json({ error }));
+                })
                 .catch(error => res.status(400).json({ error }));
         })
         .catch(error => res.status(400).json({ error }));
 };
+
 
 exports.updateComment = (req, res) => {
     Comment.findOne({ _id: req.params.id })
