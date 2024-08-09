@@ -104,23 +104,6 @@ exports.getAllComments = async (req, res) => {
     }
 };
 
-// exports.deleteComment = (req, res) => {
-//     const commentId = req.params.id;
-//     Comment.findOne({ _id: commentId })
-//         .then(comment => {
-//             if (!comment) {
-//                 return res.status(404).json({ message: 'Commentaire non trouvé' });
-//             }
-//             if (!hasAccessToComment(comment, req.auth)) {
-//                 return res.status(403).json({ message: 'Requête non autorisée' });
-//             }
-//             Comment.deleteOne({ _id: commentId })
-//                 .then(() => res.status(200).json({ message: 'Commentaire supprimé !' }))
-//                 .catch(error => res.status(400).json({ error }));
-//         })
-//         .catch(error => res.status(400).json({ error }));
-// };
-
 exports.deleteComment = (req, res) => {
     const commentId = req.params.id;
 

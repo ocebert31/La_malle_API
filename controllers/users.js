@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const User = require('../models/users');
 const jwt = require('jsonwebtoken');
 const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-names-generator');
+const { sendConfirmationEmail } = require('../utils/sendConfirmationEmail');
 
 exports.registration = (req, res, next) => {
     User.findOne({ email: req.body.email })
@@ -26,12 +27,16 @@ exports.registration = (req, res, next) => {
                         pseudo: pseudo
                     });
                     user.save()
-                        .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
-                        .catch(error => res.status(400).json({ error }));
+                        .then(() => sendConfirmationEmail(user))
+                        .then((info, error) => {
+                            res.status(201).json({ message: 'Utilisateur créé !' })
+                        })
+                        .catch(error => {res.status(400).json({ error })});
                 })
-                .catch(error => res.status(500).json({ error }));
-        })
-        .catch(error => res.status(500).json({ error }));
+                .catch(error => {res.status(500).json({ error })
+        });
+    })
+    .catch(error => res.status(500).json({ error }));
 };
 
 const passwordTooShort = (password) => {

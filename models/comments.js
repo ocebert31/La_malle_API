@@ -5,7 +5,7 @@ const commentSchema = mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     articleId: { type: String, required: true},
     commentId: { type: String },
-    deletedAt: { type: Date }
+    deletedAt: { type: Date ,}
 }, {timestamps: true});
 
 module.exports = mongoose.model('Comment', commentSchema);
