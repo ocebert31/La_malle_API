@@ -3,6 +3,7 @@ const User = require('../models/users');
 const jwt = require('jsonwebtoken');
 const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-names-generator');
 const { sendConfirmationEmail } = require('../utils/sendConfirmationEmail');
+const crypto = require('crypto');
 
 exports.registration = (req, res, next) => {
     User.findOne({ email: req.body.email })
@@ -20,11 +21,12 @@ exports.registration = (req, res, next) => {
                         length: 3,
                         separator: '_'
                     });
-                    
+                    const confirmationToken = crypto.randomBytes(20).toString('hex')
                     const user = new User({
                         email: req.body.email,
                         password: hash,
-                        pseudo: pseudo
+                        pseudo: pseudo,
+                        confirmationToken,
                     });
                     user.save()
                         .then(() => sendConfirmationEmail(user))
@@ -64,4 +66,23 @@ exports.session = (req, res, next) => {
                     });
                 })
         });
+};
+
+exports.confirmation = (req, res) => {
+    const { token } = req.params;
+    User.findOne({ confirmationToken: token })
+        .then(user => {
+            if (!user) {
+                return res.status(400).json({ message: 'Token invalide ou expiré' });
+            }
+            user.confirmationToken = undefined;
+            user.save()
+                .then(() => {
+                    res.status(200).json({ message: 'Compte confirmé avec succès' });
+                })
+                .catch(error => {
+                    res.status(500).json({ error });
+                });
+        })
+        .catch(error => res.status(500).json({ error }));
 };

@@ -15,7 +15,7 @@ const sendConfirmationEmail = async (user) => {
     text: 'pouet',
     html: `<html>
                 <body>
-                    <a href=''>ici</a> le lien pour valider votre email
+                    <a href='http://localhost:3000/confirmation/${user.confirmationToken}'>ici</a> le lien pour valider votre email
                 </body>
             </html>`
   };
