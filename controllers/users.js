@@ -51,6 +51,10 @@ exports.session = (req, res, next) => {
             if (!user) {
                 return res.status(401).json({ message: 'Paire login/mot de passe incorrecte'});
             }
+            if (user.confirmationToken) {
+                return res.status(403).json({ message: 'Veuillez confirmer votre email avant de vous connecter.' });
+            }
+
             bcrypt.compare(req.body.password, user.password)
                 .then(valid => {
                     if (!valid) {
