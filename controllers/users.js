@@ -90,3 +90,21 @@ exports.confirmation = (req, res) => {
         })
         .catch(error => res.status(500).json({ error }));
 };
+
+exports.updateAvatarOptions = (req, res) => {
+    const userId = req.auth.userId;
+    const avatarOptions = req.body.avatarOptions;
+
+    User.findByIdAndUpdate(
+        userId,  
+        { avatarOptions },  
+        { new: true } 
+    )
+    .then(user => {
+        if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+        res.status(200).json({ message: 'Options d\'avatar mises à jour', user });
+    })
+    .catch(error => res.status(500).json({ error }));
+};
