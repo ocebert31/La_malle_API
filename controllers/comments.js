@@ -95,6 +95,7 @@ exports.getAllComments = async (req, res) => {
                     upvotes: 1,
                     downvotes: 1,
                     userVote: userId ? { voteType: '$userVotes.voteType' } : null,
+                    avatarOptions: '$user.avatarOptions'
                 }
             }
         ]);
