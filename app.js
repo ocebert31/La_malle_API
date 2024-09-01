@@ -16,7 +16,12 @@ mongoose.connect(process.env.CONNECT_MONGO_DB)
   .then(() => {
     console.log('Connexion à MongoDB réussie !')
     createAdmin();
-  })
+    const User = mongoose.model('User');
+    
+    User.collection.dropIndex({ email: 1 })
+      .then(() => console.log('Index supprimé avec succès'))
+      .catch(err => console.error('Erreur lors de la suppression de l\'index:', err));
+      })
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 app.use(express.json());

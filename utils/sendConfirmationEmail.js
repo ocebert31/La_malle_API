@@ -10,7 +10,7 @@ const sendConfirmationEmail = async (user) => {
   });
   const mailOptions = {
     from: process.env.SMTP_USER,
-    to: user.email,
+    to: user.newEmail,
     subject: 'Confirmez votre compte',
     text: 'pouet',
     html: `

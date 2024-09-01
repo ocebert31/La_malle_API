@@ -8,5 +8,6 @@ router.post('/registration', userController.registration);
 router.post('/session', userController.session);
 router.post('/confirmation/:token', userController.confirmation);
 router.put('/avatar-options', auth, authenticated, userController.updateAvatarOptions);
+router.post('/update-email', auth, authenticated, userController.updateEmail);
 
 module.exports = router;
