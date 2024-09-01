@@ -145,7 +145,7 @@ exports.updateEmail = async (req, res) => {
             return res.status(400).json({ message: 'Mot de passe incorrect.' });
         }
 
-        const verifyUniqueEmail = awaitUser.findOne({ $or: [
+        const verifyUniqueEmail = await User.findOne({ $or: [
             { email: newEmail },
             { newEmail: newEmail }
         ] });

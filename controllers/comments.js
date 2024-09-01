@@ -8,7 +8,6 @@ exports.createComments = async(req, res) => {
         userId: req.auth.userId,
         commentId: req.body.commentId
     });
-    console.log(req)
     comment.save()
     .then(comment => { res.status(200).json({ comment })})
     .catch(error => {console.error(error),res.status(400).json( { error })})
