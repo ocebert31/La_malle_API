@@ -4,10 +4,9 @@ const jwt = require('jsonwebtoken');
 const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-names-generator');
 const { sendConfirmationEmail } = require('../utils/sendConfirmationEmail');
 const crypto = require('crypto');
-const { sendConfirmationUpdateEmail } = require('../utils/sendConfirmationUpdateEmail');
 
 exports.registration = (req, res, next) => {
-    const { email } = req.body;
+    const { email, password } = req.body;
 
     if (!email || email.trim() === '') {
         return res.status(400).json({ message: 'L\'email est requis.' });
@@ -18,14 +17,13 @@ exports.registration = (req, res, next) => {
         { newEmail: email }
     ] })
         .then(existingUser => {
-
             if (existingUser) {
                return res.status(400).json({ message: 'Cet email est déjà utilisé' });
-            }  
-            if (passwordTooShort(req.body.password)) {
+            }
+            if (passwordTooShort(password)) {
                 return res.status(400).json({ message: 'Le mot de passe doit comporter au moins 6 caractères' });
-            } 
-            bcrypt.hash(req.body.password, 10)
+            }
+            bcrypt.hash(password, 10)
                 .then(hash => {
                     const pseudo = uniqueNamesGenerator({
                         dictionaries: [colors, adjectives, animals],
@@ -40,11 +38,11 @@ exports.registration = (req, res, next) => {
                         confirmationToken,
                     });
                     user.save()
-                        .then(() => sendConfirmationEmail(user))
+                        .then(() => sendConfirmationEmail(user, 'signup'))
                         .then((info, error) => {
                             res.status(201).json({ message: 'Utilisateur créé !' })
                         })
-                        .catch(error => {res.status(400).json({ error })});
+                        .catch(error => { res.status(400).json({ error })});
                 })
                 .catch(error => {res.status(500).json({ error })
         });
@@ -154,16 +152,15 @@ exports.updateEmail = async (req, res) => {
             return res.status(400).json({ message: 'Cette adresse e-mail est déjà utilisée.' });
         }
 
-        const confirmationToken = crypto.randomBytes(20).toString('hex');
-        user.confirmationToken = confirmationToken;
+        user.confirmationToken = crypto.randomBytes(20).toString('hex');
+        
         user.newEmail = newEmail;
 
         await user.save();
-        await sendConfirmationUpdateEmail(user, confirmationToken);
+        await sendConfirmationEmail(user, 'update');
 
         res.status(200).json({ message: 'Un e-mail de confirmation a été envoyé à votre nouvelle adresse.' });
     } catch (error) {
-        console.error('Erreur lors de la mise à jour de l\'adresse e-mail:', error); 
         res.status(500).json({ message: 'Erreur lors de la mise à jour de l\'adresse e-mail.', error: error.message });
     }
 }
