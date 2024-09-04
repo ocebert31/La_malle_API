@@ -66,8 +66,9 @@ const confirmationLink = (user, confirmationType) => {
   ? `${process.env.FRONTEND_URL}/confirmation-update-email/${user.confirmationToken}`
   : confirmationType === 'signup'
   ? `${process.env.FRONTEND_URL}/confirmation/${user.confirmationToken}`
-  : `${process.env.FRONTEND_URL}/`;
+  : `${process.env.FRONTEND_URL}/form-reset-password/${user.confirmationToken}`;
 }
+
 
 module.exports = { sendConfirmationEmail };
 

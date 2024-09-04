@@ -6,10 +6,14 @@ const { sendConfirmationEmail } = require('../utils/sendConfirmationEmail');
 const crypto = require('crypto');
 
 exports.registration = (req, res, next) => {
-    const { email, password } = req.body;
+    const { email, password, confirmPassword } = req.body;
 
     if (!email || email.trim() === '') {
         return res.status(400).json({ message: 'L\'email est requis.' });
+    }
+
+    if (password !== confirmPassword) {
+        return res.status(400).json({ message: "Veuillez indiquer la bonne confirmation de mot de passe" });
     }
 
     User.findOne({ $or: [
@@ -228,4 +232,31 @@ exports.forgotPassword = async (req, res) => {
     }
 };
 
+exports.resetPassword = async (req, res) => {
+    const { token } = req.params;
+    const { newPassword, confirmNewPassword } = req.body;
 
+    if (!newPassword || !confirmNewPassword) {
+        return res.status(400).json({ message: "Veuillez fournir le nouveau mot de passe et sa confirmation." });
+    }
+    if (newPassword !== confirmNewPassword) {
+        return res.status(400).json({ message: "Les mots de passe ne correspondent pas." });
+    }
+    try {
+        const user = await User.findOne({
+            confirmationToken: token,
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: "Le token est invalide ou expiré." });
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        user.confirmationToken = undefined;
+
+        await user.save();
+        res.status(200).json({ message: "Mot de passe réinitialisé avec succès." });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de la réinitialisation du mot de passe.", error: error.message });
+    }
+};

@@ -11,5 +11,6 @@ router.put('/avatar-options', auth, authenticated, userController.updateAvatarOp
 router.post('/update-email', auth, authenticated, userController.updateEmail);
 router.post('/update-password', auth, authenticated, userController.updatePassword);
 router.post('/forgot-password', userController.forgotPassword);
+router.post('/reset-password/:token', userController.resetPassword);
 
 module.exports = router;
