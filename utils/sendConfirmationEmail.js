@@ -12,9 +12,13 @@ const sendConfirmationEmail = async (user, confirmationType) => {
   const mailOptions = {
     from: process.env.SMTP_USER,
     to: user.newEmail,
-    subject: 'Confirmez votre adresse email',
+    to: confirmationType !== 'forgotPassword' ? user.newEmail : user.email,
+    subject: confirmationType !== 'forgotPassword'
+      ? 'Confirmez votre adresse email'
+      : 'Confirmez afin de réinitialiser votre mot de passe',
     html: html(user, confirmationType)
   };
+  
 
   return transporter.sendMail(mailOptions);
 };
@@ -27,15 +31,22 @@ const html = (user, confirmationType) => {
           <h1 style="margin: 0; font-size: 24px;">Bienvenue sur Inkstream</h1>
         </div>
         <div style="padding: 30px;">
-          <h2 style="color: #333333; font-size: 20px;">Confirmez votre adresse e-mail</h2>
+          <h2 style="color: #333333; font-size: 20px;">
+          ${confirmationType !== 'forgotPassword'
+             ? 'Confirmez votre adresse email'
+            : 'Confirmez afin de réinitialiser votre mot de passe'}
+            </h2>
           <p style="color: #666666; font-size: 16px; line-height: 1.5;">
-            ${confirmationType === 'update'
-              ? 'Merci de mettre à jour votre adresse e-mail sur notre application. Pour finaliser cette opération, veuillez confirmer votre nouvelle adresse e-mail en cliquant sur le bouton ci-dessous :'
-              : 'Merci de vous être inscrit sur notre application. Pour finaliser votre inscription, veuillez confirmer votre adresse e-mail en cliquant sur le bouton ci-dessous :'}
+              ${confirmationType === 'update'
+                ? 'Merci de mettre à jour votre adresse email sur notre application. Pour finaliser cette opération, veuillez confirmer votre nouvelle adresse e-mail en cliquant sur le bouton ci-dessous :'
+                : confirmationType === 'signup'
+                ? 'Merci de vous être inscrit sur notre application. Pour finaliser votre inscription, veuillez confirmer votre adresse e-mail en cliquant sur le bouton ci-dessous :'
+                : 'Pour réinitialiser votre mot de passe, cliquez sur le bouton ci-dessous :'}
           </p>
           <div style="text-align: center; margin: 40px 0;">
             <a href='${confirmationLink(user, confirmationType)}' style="background-color: #ff8f5f; color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 5px; font-size: 18px; display: inline-block;">
-              Confirmer votre adresse email
+              
+               ${confirmationType !== 'forgotPassword' ? 'Confirmez votre adresse email' : 'Confirmez afin de réinitialiser votre mot de passe'}
             </a>
           </div>
           <p style="color: #666666; font-size: 14px; line-height: 1.5;">
@@ -52,8 +63,10 @@ const html = (user, confirmationType) => {
 
 const confirmationLink = (user, confirmationType) => {
   return confirmationType === 'update'
-    ? `${process.env.FRONTEND_URL}/confirmation-update-email/${user.confirmationToken}`
-    : `${process.env.FRONTEND_URL}/confirmation/${user.confirmationToken}`;
+  ? `${process.env.FRONTEND_URL}/confirmation-update-email/${user.confirmationToken}`
+  : confirmationType === 'signup'
+  ? `${process.env.FRONTEND_URL}/confirmation/${user.confirmationToken}`
+  : `${process.env.FRONTEND_URL}/`;
 }
 
 module.exports = { sendConfirmationEmail };

@@ -9,8 +9,7 @@ router.post('/session', userController.session);
 router.post('/confirmation/:token', userController.confirmation);
 router.put('/avatar-options', auth, authenticated, userController.updateAvatarOptions);
 router.post('/update-email', auth, authenticated, userController.updateEmail);
-
 router.post('/update-password', auth, authenticated, userController.updatePassword);
-
+router.post('/forgot-password', userController.forgotPassword);
 
 module.exports = router;

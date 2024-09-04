@@ -195,7 +195,7 @@ exports.updatePassword = async (req, res) => {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         user.password = hashedPassword;
-        console.log(user)
+       
         await user.save();
 
         res.status(200).json({ message: 'Mot de passe mis à jour avec succès.' });
@@ -203,3 +203,29 @@ exports.updatePassword = async (req, res) => {
         res.status(500).json({ message: 'Erreur lors de la mise à jour du mot de passe.', error: error.message });
     }
 };
+
+exports.forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ message: "L'adresse e-mail est requise." });
+    }
+
+    try {
+        
+        const user = await User.findOne({ email});
+        if (!user) {
+            return res.status(400).json({ message: "Utilisateur non trouvé." });
+        }
+        
+        user.confirmationToken = crypto.randomBytes(20).toString('hex');
+        await user.save();
+
+        await sendConfirmationEmail(user, 'forgotPassword');
+
+        res.status(200).json({ message: "Un e-mail de réinitialisation a été envoyé." });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de la demande de réinitialisation du mot de passe.", error: error.message });
+    }
+};
+
+
