@@ -164,3 +164,42 @@ exports.updateEmail = async (req, res) => {
         res.status(500).json({ message: 'Erreur lors de la mise à jour de l\'adresse e-mail.', error: error.message });
     }
 }
+
+exports.updatePassword = async (req, res) => {
+    const { currentPassword, newPassword, confirmNewPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+        return res.status(400).json({ message: 'Veuillez fournir tous les champs requis : mot de passe actuel, nouveau mot de passe, et confirmation du nouveau mot de passe.' });
+    }
+
+    if (newPassword !== confirmNewPassword) {
+        return res.status(400).json({ message: 'Le nouveau mot de passe et la confirmation ne correspondent pas.' });
+    }
+
+    if (newPassword.length < 6) {
+        return res.status(400).json({ message: 'Le nouveau mot de passe doit comporter au moins 6 caractères.' });
+    }
+
+    try {
+        const user = await User.findById(req.auth.userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Mot de passe actuel incorrect.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        user.password = hashedPassword;
+        console.log(user)
+        await user.save();
+
+        res.status(200).json({ message: 'Mot de passe mis à jour avec succès.' });
+    } catch (error) {
+        res.status(500).json({ message: 'Erreur lors de la mise à jour du mot de passe.', error: error.message });
+    }
+};
