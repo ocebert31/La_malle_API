@@ -260,3 +260,60 @@ exports.resetPassword = async (req, res) => {
         res.status(500).json({ message: "Erreur lors de la réinitialisation du mot de passe.", error: error.message });
     }
 };
+
+exports.getAllUser = (req, res) => {
+    const { page = 1, limit = 20, searchQuery = '' } = req.query;
+    const currentPage = parseInt(page, 10);
+    const usersLimit = parseInt(limit, 10);
+    const skip = (currentPage - 1) * usersLimit;
+
+    const searchFilter = searchQuery
+        ? { $or: [ 
+            { pseudo: { $regex: searchQuery, $options: 'i' } }, 
+            { email: { $regex: searchQuery, $options: 'i' } }
+          ] }
+        : {};
+
+    User.find(searchFilter)
+        .skip(skip)
+        .limit(usersLimit)
+        .then(users => {res.status(200).json({page: currentPage, limit: usersLimit, users});})
+        .catch(error => res.status(400).json({ error }));
+};
+
+exports.updateUserRole = async (req, res) => {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    try {
+        if (!['author', 'reader', 'admin'].includes(role)) {
+            return res.status(400).json({ message: 'Rôle invalide' });
+        }
+        const user = await User.findByIdAndUpdate(
+            id,
+            { role },
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+
+        res.json(user);
+        console.log(user)
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erreur du serveur' });
+    }
+};
+
+exports.userData = async (req, res) => {
+    try {
+        const user = await User.findById(req.auth.userId).select('-password'); 
+        if (!user) return res.status(404).json({ message: 'Utilisateur non trouvé' });
+
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+};

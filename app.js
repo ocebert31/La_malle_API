@@ -11,6 +11,7 @@ const createAdmin = require('./config/initAdmin')
 const commentsRoutes = require('./routes/comment');
 const votesRoutes = require('./routes/votes');
 const favoritesRoutes = require('./routes/favorites');
+const adminRoutes = require('./routes/admin')
 
 mongoose.connect(process.env.CONNECT_MONGO_DB)
   .then(() => {
@@ -38,6 +39,7 @@ app.use('/auth', usersRoutes);
 app.use('/comments', commentsRoutes);
 app.use('/votes', votesRoutes);
 app.use('/favorites', favoritesRoutes);
+app.use('/admin', adminRoutes);
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(errorHandler);
 

@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const Favorite = require('../models/favorites'); 
 
 exports.createArticle = (req, res) => {
-    if(!req.auth) {
+    if(!req.auth || req.auth.role === 'reader') {
         return res.status(403).json({ message: 'Requête non autorisée' });
     }
     const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null;
