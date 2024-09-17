@@ -75,6 +75,7 @@ exports.getAllArticles = async (req, res) => {
  
 exports.getOneArticle =  async (req, res) => {
     let favorite = null;
+    const userId = req.auth && req.auth.userId ? new mongoose.Types.ObjectId(req.auth.userId): null;
     if(req.auth) {
         favorite = await Favorite.findOne({ userId: req.auth.userId, articleId: req.params.id });
     }
@@ -88,7 +89,53 @@ exports.getOneArticle =  async (req, res) => {
                 as: 'user'
             }
         },
+        {
+            $lookup: {
+                from: 'votes',
+                localField: '_id',
+                foreignField: 'articleId',
+                as: 'votes'
+            }
+        },
         { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+        {
+            $addFields: {
+                upvotes: {
+                    $size: {
+                        $filter: {
+                            input: '$votes',
+                            as: 'vote',
+                            cond: { $eq: ['$$vote.voteType', 'upvote'] }
+                        }
+                    }
+                },
+                downvotes: {
+                    $size: {
+                        $filter: {
+                            input: '$votes',
+                            as: 'vote',
+                            cond: { $eq: ['$$vote.voteType', 'downvote'] }
+                        }
+                    }
+                },
+                userVotes: userId ? {
+                    $let: {
+                        vars: {
+                            filteredVotes: {
+                                $filter: {
+                                    input: '$votes',
+                                    as: 'vote',
+                                    cond: { $eq: ['$$vote.userId', userId] }
+                                }
+                            }
+                        },
+                        in: {
+                            $arrayElemAt: ['$$filteredVotes', 0]
+                        }
+                    }
+                } : null
+            }
+        },
         {
             $project: {
                 title: 1,
@@ -97,6 +144,9 @@ exports.getOneArticle =  async (req, res) => {
                 createdAt: 1,
                 userId: 1,
                 pseudo: '$user.pseudo',
+                upvotes: 1,
+                downvotes: 1,
+                userVote: userId ? { voteType: '$userVotes.voteType' } : null
             }
         }
     ]).then(articles => {
