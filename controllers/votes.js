@@ -1,19 +1,15 @@
 const Vote = require('../models/votes');
+const _ = require('lodash');
 
 exports.createVote = async (req, res) => {
     const voteType = req.body.voteType;
     const userId = req.auth.userId;
     const commentId = req.body.commentId || null;
     const articleId = req.body.articleId || null;
+    const voteParams = _.pickBy({ userId, commentId, articleId }, value => value !== null);
 
     try {
-        const existingVote = await Vote.findOne({ 
-            userId, 
-            $or: [
-                { commentId },
-                { articleId }
-            ]
-        });
+        const existingVote = await Vote.findOne(voteParams);
         if (existingVote) {
             await Vote.deleteOne({ _id: existingVote._id });
             if (existingVote.voteType === voteType) {
