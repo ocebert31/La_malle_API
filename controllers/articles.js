@@ -22,7 +22,6 @@ exports.createArticle = (req, res) => {
     }
     article.save()
     .then(article => { res.status(200).json({ article })})
-    
     .catch(error => { res.status(400).json( { error })})
 };
 
@@ -39,15 +38,19 @@ exports.getAllArticles = async (req, res) => {
             .map(favorite => favorite.articleId._id); 
             matchStage = searchQuery ? { 
                 _id: { $in: favoriteArticleIds },
-                title: { $regex: searchQuery, $options: 'i' },
-                tags: { $regex: searchQuery, $options: 'i' }
+                $or: [
+                    { title: { $regex: searchQuery, $options: 'i' } },
+                    { tags: { $elemMatch: { $regex: searchQuery, $options: 'i' } } }
+                ]
             } : { 
                 _id: { $in: favoriteArticleIds } 
             };
         } else {
             matchStage = searchQuery ? { 
-                title: { $regex: searchQuery, $options: 'i' },
-                tags: { $regex: searchQuery, $options: 'i' }
+                $or: [
+                    { title: { $regex: searchQuery, $options: 'i' } },
+                    { tags: { $elemMatch: { $regex: searchQuery, $options: 'i' } } }
+                ]
             } : {};
         }
         const articles = await Article.aggregate([
