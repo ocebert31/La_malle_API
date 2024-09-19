@@ -8,12 +8,18 @@ exports.createArticle = (req, res) => {
         return res.status(403).json({ message: 'Requête non autorisée' });
     }
     const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null;
+    const tags = req.body.tags ? req.body.tags.split(',').map(tag => tag.trim()) : [];
+
     const article = new Article({
         title: req.body.title,
         content: req.body.content,
+        tags: tags,
         imageUrl,
         userId: req.auth.userId 
     });
+    if (tags && tags.length > 5) {
+        return res.status(404).json({ message: 'Seulement 5 tags sont autorisés' });
+    }
     article.save()
     .then(article => { res.status(200).json({ article })})
     
@@ -33,13 +39,15 @@ exports.getAllArticles = async (req, res) => {
             .map(favorite => favorite.articleId._id); 
             matchStage = searchQuery ? { 
                 _id: { $in: favoriteArticleIds },
-                title: { $regex: searchQuery, $options: 'i' }
+                title: { $regex: searchQuery, $options: 'i' },
+                tags: { $regex: searchQuery, $options: 'i' }
             } : { 
                 _id: { $in: favoriteArticleIds } 
             };
         } else {
             matchStage = searchQuery ? { 
-                title: { $regex: searchQuery, $options: 'i' } 
+                title: { $regex: searchQuery, $options: 'i' },
+                tags: { $regex: searchQuery, $options: 'i' }
             } : {};
         }
         const articles = await Article.aggregate([
@@ -58,6 +66,7 @@ exports.getAllArticles = async (req, res) => {
                     title: 1,
                     imageUrl: 1,
                     content: 1,
+                    tags: 1,
                     createdAt: 1,
                     pseudo: '$user.pseudo',
                 }
@@ -141,6 +150,7 @@ exports.getOneArticle =  async (req, res) => {
                 title: 1,
                 imageUrl: 1,
                 content: 1,
+                tags: 1, 
                 createdAt: 1,
                 userId: 1,
                 pseudo: '$user.pseudo',
@@ -185,10 +195,11 @@ exports.updateArticle = (req, res) => {
             if (!hasAccessToArticle(article, req.auth)) {
                 return res.status(403).json({ message: 'Requête non autorisée' });
             }
-
+            const tags = req.body.tags ? req.body.tags.split(',').map(tag => tag.trim()) : [];
             const update = {
                 title: req.body.title,
-                content: req.body.content
+                content: req.body.content,
+                tags: tags
             };
             if (req.file) {
                 const oldFilename = article.imageUrl.split('/images/')[1];
@@ -212,5 +223,5 @@ exports.updateArticle = (req, res) => {
 };
 
 function hasAccessToArticle(article, auth) {
-    return article.userId.toString() === auth.userId || auth.role === 'admin';
+    return article.userId.toString() === auth.userId.toString() || auth.role === 'admin';
 }
