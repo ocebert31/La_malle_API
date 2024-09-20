@@ -20,6 +20,7 @@ exports.createArticle = (req, res) => {
     if (tags && tags.length > 5) {
         return res.status(404).json({ message: 'Seulement 5 tags sont autorisés' });
     }
+    console.log(article)
     article.save()
     .then(article => { res.status(200).json({ article })})
     .catch(error => { res.status(400).json( { error })})

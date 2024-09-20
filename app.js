@@ -12,6 +12,7 @@ const commentsRoutes = require('./routes/comment');
 const votesRoutes = require('./routes/votes');
 const favoritesRoutes = require('./routes/favorites');
 const adminRoutes = require('./routes/admin')
+const categoriesRoutes = require('./routes/categories')
 
 mongoose.connect(process.env.CONNECT_MONGO_DB)
   .then(() => {
@@ -40,6 +41,7 @@ app.use('/comments', commentsRoutes);
 app.use('/votes', votesRoutes);
 app.use('/favorites', favoritesRoutes);
 app.use('/admin', adminRoutes);
+app.use('/categories', categoriesRoutes)
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(errorHandler);
 
