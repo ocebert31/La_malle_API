@@ -6,5 +6,6 @@ const auth = require('../middlewares/auth');
 
 router.post('/', auth, authenticated, categoriesController.createCategories);
 router.get('/', auth, authenticated, categoriesController.getAllCategories);
+router.delete('/:id', auth, authenticated, categoriesController.deleteCategory);
 
 module.exports = router;
