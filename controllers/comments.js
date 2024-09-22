@@ -16,7 +16,10 @@ exports.createComments = async(req, res) => {
 exports.getAllComments = async (req, res) => {
     const articleId = req.query.articleId;
     const userId = req.auth && req.auth.userId ? new mongoose.Types.ObjectId(req.auth.userId): null;
+    const { page = 1, limit = 20 } = req.query;
     try {
+        const currentPage = parseInt(page, 10);
+        const commentsLimit = parseInt(limit, 10);
         const comments = await Comment.aggregate([
             {
                 $match: { articleId: articleId }
@@ -96,8 +99,12 @@ exports.getAllComments = async (req, res) => {
                     userVote: userId ? { voteType: '$userVotes.voteType' } : null,
                     avatarOptions: '$user.avatarOptions'
                 }
-            }
+            },
+            { $sort: { createdAt: -1 } },
+            { $skip: (currentPage - 1) * commentsLimit },
+            { $limit: commentsLimit },
         ]);
+        console.log('skip', (currentPage - 1) * commentsLimit )
         res.status(200).json(comments);
     } catch (error) {
         res.status(400).json({ error });

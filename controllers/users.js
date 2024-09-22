@@ -262,7 +262,7 @@ exports.resetPassword = async (req, res) => {
 };
 
 exports.getAllUser = (req, res) => {
-    const { page = 1, limit = 20, searchQuery = '' } = req.query;
+    const { page = 1, limit = 10, searchQuery = '' } = req.query;
     const currentPage = parseInt(page, 10);
     const usersLimit = parseInt(limit, 10);
     const skip = (currentPage - 1) * usersLimit;
