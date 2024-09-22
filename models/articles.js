@@ -5,6 +5,7 @@ const articleSchema = mongoose.Schema({
   content: { type: String, required: true},
   imageUrl: { type: String },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Categories', required: true },
   tags: { type: [String] },
 }, {timestamps: true});
 

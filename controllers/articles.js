@@ -2,57 +2,66 @@ const Article = require('../models/articles')
 const fs = require('fs');
 const mongoose = require('mongoose');
 const Favorite = require('../models/favorites'); 
+const { ObjectId } = mongoose;
 
-exports.createArticle = (req, res) => {
+exports.createArticle = async (req, res) => {
     if(!req.auth || req.auth.role === 'reader') {
         return res.status(403).json({ message: 'Requête non autorisée' });
     }
+
     const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/images/${req.file.filename}` : null;
     const tags = req.body.tags ? req.body.tags.split(',').map(tag => tag.trim()) : [];
-
     const article = new Article({
         title: req.body.title,
         content: req.body.content,
         tags: tags,
         imageUrl,
-        userId: req.auth.userId 
+        userId: req.auth.userId,
+        categoryId: req.body.categoryId
     });
     if (tags && tags.length > 5) {
         return res.status(404).json({ message: 'Seulement 5 tags sont autorisés' });
     }
-    console.log(article)
     article.save()
     .then(article => { res.status(200).json({ article })})
     .catch(error => { res.status(400).json( { error })})
 };
 
 exports.getAllArticles = async (req, res) => {
-    const { searchQuery = '', page = 1, limit = 20, type = 'all' } = req.query;
+    const { searchQuery = '', page = 1, limit = 20, type = 'all', categoryId = '' } = req.query;
     try {
         const currentPage = parseInt(page, 10);
         const articlesLimit = parseInt(limit, 10);
         let matchStage = {};
+
         if (type === 'favorites' && req.auth) {
             const favoriteArticles = await Favorite.find({ userId: req.auth.userId }).populate('articleId');
             const favoriteArticleIds = favoriteArticles
-            .filter(favorite => favorite.articleId)
-            .map(favorite => favorite.articleId._id); 
-            matchStage = searchQuery ? { 
-                _id: { $in: favoriteArticleIds },
-                $or: [
-                    { title: { $regex: searchQuery, $options: 'i' } },
-                    { tags: { $elemMatch: { $regex: searchQuery, $options: 'i' } } }
-                ]
-            } : { 
-                _id: { $in: favoriteArticleIds } 
-            };
-        } else {
-            matchStage = searchQuery ? { 
-                $or: [
-                    { title: { $regex: searchQuery, $options: 'i' } },
-                    { tags: { $elemMatch: { $regex: searchQuery, $options: 'i' } } }
-                ]
-            } : {};
+                .filter(favorite => favorite.articleId)
+                .map(favorite => favorite.articleId._id);
+
+                matchStage = searchQuery ? { 
+                        _id: { $in: favoriteArticleIds },
+                        $or: [
+                            { title: { $regex: searchQuery, $options: 'i' } },
+                            { categoryId: { $regex: searchQuery, $options: 'i' } },
+                            { tags: { $elemMatch: { $regex: searchQuery, $options: 'i' } } }
+                        ]
+                    } : { 
+                        _id: { $in: favoriteArticleIds } 
+                    };
+                } else {
+                    matchStage = searchQuery ? { 
+                        $or: [
+                            { title: { $regex: searchQuery, $options: 'i' } },
+                            { categoryId: { $regex: searchQuery, $options: 'i' } },
+                            { tags: { $elemMatch: { $regex: searchQuery, $options: 'i' } } }
+                        ]
+                    } : {};
+                }
+
+        if (categoryId) {
+            matchStage.categoryId = new mongoose.Types.ObjectId(categoryId);
         }
         const articles = await Article.aggregate([
             { $match: matchStage },
@@ -64,7 +73,16 @@ exports.getAllArticles = async (req, res) => {
                     as: 'user'
                 }
             },
+            {
+                $lookup: {
+                    from: 'categories',
+                    localField: 'categoryId',
+                    foreignField: '_id',
+                    as: 'category'
+                }
+            },
             { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
             {
                 $project: {
                     title: 1,
@@ -73,11 +91,13 @@ exports.getAllArticles = async (req, res) => {
                     tags: 1,
                     createdAt: 1,
                     pseudo: '$user.pseudo',
+                    categoryName: '$category.name',
+                    categoryId: 1,
                 }
             },
             { $sort: { createdAt: -1 } },
             { $skip: (currentPage - 1) * articlesLimit },
-            { $limit: articlesLimit }
+            { $limit: articlesLimit },
         ]);
         res.status(200).json(articles);
     } catch (error) {
@@ -85,7 +105,9 @@ exports.getAllArticles = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
- 
+
+
+
 exports.getOneArticle =  async (req, res) => {
     let favorite = null;
     const userId = req.auth && req.auth.userId ? new mongoose.Types.ObjectId(req.auth.userId): null;
@@ -110,7 +132,16 @@ exports.getOneArticle =  async (req, res) => {
                 as: 'votes'
             }
         },
+        {
+            $lookup: {
+                from: 'categories',
+                localField: 'categoryId', 
+                foreignField: '_id',
+                as: 'category'
+            }
+        },
         { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
         {
             $addFields: {
                 upvotes: {
@@ -160,7 +191,8 @@ exports.getOneArticle =  async (req, res) => {
                 pseudo: '$user.pseudo',
                 upvotes: 1,
                 downvotes: 1,
-                userVote: userId ? { voteType: '$userVotes.voteType' } : null
+                userVote: userId ? { voteType: '$userVotes.voteType' } : null,
+                categoryName: '$category.name',
             }
         }
     ]).then(articles => {
@@ -203,7 +235,8 @@ exports.updateArticle = (req, res) => {
             const update = {
                 title: req.body.title,
                 content: req.body.content,
-                tags: tags
+                tags: tags,
+                categoryId: req.body.categoryId
             };
             if (req.file) {
                 const oldFilename = article.imageUrl.split('/images/')[1];
@@ -218,8 +251,45 @@ exports.updateArticle = (req, res) => {
                 { ...update, _id: req.params.id },
                 { new: true }
             )
-            .then((updatedArticle) => {
-                res.status(200).json({ article: updatedArticle });
+            .then(async (updatedArticle) => {
+                const articleWithDetails = await Article.aggregate([
+                    { $match: { _id: updatedArticle._id } },
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'userId',
+                            foreignField: '_id',
+                            as: 'user'
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: 'categories',
+                            localField: 'categoryId',
+                            foreignField: '_id',
+                            as: 'category'
+                        }
+                    },
+                    { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+                    { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
+                    {
+                        $project: {
+                            title: 1,
+                            content: 1,
+                            tags: 1,
+                            imageUrl: 1,
+                            createdAt: 1,
+                            pseudo: '$user.pseudo',
+                            categoryName: '$category.name'
+                        }
+                    }
+                ]);
+
+                if (!articleWithDetails.length) {
+                    return res.status(404).json({ message: 'Article mis à jour non trouvé' });
+                }
+
+                res.status(200).json({ article: articleWithDetails[0] });
             })
             .catch((error) => res.status(400).json({ error: error.message }));
         })
