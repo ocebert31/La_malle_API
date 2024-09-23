@@ -261,7 +261,7 @@ exports.resetPassword = async (req, res) => {
     }
 };
 
-exports.getAllUser = (req, res) => {
+exports.getAllUser = async (req, res) => {
     const { page = 1, limit = 10, searchQuery = '' } = req.query;
     const currentPage = parseInt(page, 10);
     const usersLimit = parseInt(limit, 10);
@@ -274,11 +274,17 @@ exports.getAllUser = (req, res) => {
           ] }
         : {};
 
-    User.find(searchFilter)
-        .skip(skip)
-        .limit(usersLimit)
-        .then(users => {res.status(200).json({page: currentPage, limit: usersLimit, users});})
-        .catch(error => res.status(400).json({ error }));
+    try {
+        const totalUsers = await User.countDocuments(searchFilter);
+        const users = await User.find(searchFilter)
+            .skip(skip)
+            .limit(usersLimit);
+
+        res.status(200).json({ page: currentPage, limit: usersLimit, totalUsers, users
+        });
+    } catch (error) {
+        res.status(400).json({ error });
+    }
 };
 
 exports.updateUserRole = async (req, res) => {
