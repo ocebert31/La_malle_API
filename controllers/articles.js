@@ -2,7 +2,6 @@ const Article = require('../models/articles')
 const fs = require('fs');
 const mongoose = require('mongoose');
 const Favorite = require('../models/favorites'); 
-const { ObjectId } = mongoose;
 
 exports.createArticle = async (req, res) => {
     if(!req.auth || req.auth.role === 'reader') {

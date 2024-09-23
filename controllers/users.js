@@ -275,17 +275,16 @@ exports.getAllUser = async (req, res) => {
         : {};
 
     try {
-        const totalUsers = await User.countDocuments(searchFilter);
         const users = await User.find(searchFilter)
             .skip(skip)
             .limit(usersLimit);
 
-        res.status(200).json({ page: currentPage, limit: usersLimit, totalUsers, users
-        });
+        res.status(200).json({ page: currentPage, limit: usersLimit, users});
     } catch (error) {
         res.status(400).json({ error });
     }
 };
+
 
 exports.updateUserRole = async (req, res) => {
     const { id } = req.params;
