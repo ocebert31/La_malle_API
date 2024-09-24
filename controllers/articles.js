@@ -27,7 +27,7 @@ exports.createArticle = async (req, res) => {
 };
 
 exports.getAllArticles = async (req, res) => {
-    const { searchQuery = '', page = 1, limit = 20, type = 'all', categoryId = '' } = req.query;
+    const { searchQuery = '', page = 1, limit = 20, type = 'all', categoryId = null } = req.query;
     try {
         const currentPage = parseInt(page, 10);
         const articlesLimit = parseInt(limit, 10);
@@ -191,6 +191,7 @@ exports.getOneArticle =  async (req, res) => {
                 upvotes: 1,
                 downvotes: 1,
                 userVote: userId ? { voteType: '$userVotes.voteType' } : null,
+                categoryId: 1,
                 categoryName: '$category.name',
             }
         }
