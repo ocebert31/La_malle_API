@@ -104,12 +104,43 @@ exports.getAllComments = async (req, res) => {
             { $skip: (currentPage - 1) * commentsLimit },
             { $limit: commentsLimit },
         ]);
-        console.log('skip', (currentPage - 1) * commentsLimit )
-        res.status(200).json(comments);
+        const commentAndReplies = attachRepliesToCommment(comments);
+        res.status(200).json(commentAndReplies);
     } catch (error) {
         res.status(400).json({ error });
     }
 };
+
+function attachRepliesToCommment(comments) {
+    const commentAndReplies = [];
+    comments.forEach(comment => {
+        if (commentIsReply(comment)) {
+            attachReplyToParentComment(commentAndReplies, comment);
+        } else {
+            commentAndReplies.push(comment);
+        }
+    });
+    return commentAndReplies;
+}
+
+function commentIsReply(comment) {
+    return comment.commentId;
+}
+
+function attachReplyToParentComment(commentAndReplies, reply) {
+    for (let comment of commentAndReplies) {
+        if (comment._id.toString() === reply.commentId) {
+            initReplies(comment);
+            comment.replies.push(reply);
+        }
+    }
+}
+
+function initReplies(comment) {
+    if (!comment.replies) {
+        comment.replies = [];
+    }
+}
 
 exports.deleteComment = (req, res) => {
     const commentId = req.params.id;
