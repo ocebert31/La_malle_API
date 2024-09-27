@@ -100,7 +100,7 @@ exports.getAllComments = async (req, res) => {
                     avatarOptions: '$user.avatarOptions'
                 }
             },
-            { $sort: { createdAt: -1 } },
+            { $sort: { createdAt: 1 } },
             { $skip: (currentPage - 1) * commentsLimit },
             { $limit: commentsLimit },
         ]);
@@ -165,5 +165,5 @@ exports.updateComment = (req, res) => {
 };
 
 function hasAccessToComment(comment, auth) {
-    return comment.userId.toString() === auth.userId || auth.role === 'admin';
+    return comment.userId.toString() === auth.userId.toString() || auth.role === 'admin';
 }
