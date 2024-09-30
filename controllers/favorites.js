@@ -8,7 +8,7 @@ exports.createFavorite = async (req, res) => {
 
         if (existingFavoriteArticle) {
             await Favorite.deleteOne({ _id: existingFavoriteArticle._id });
-            if (existingFavoriteArticle.articleId.toString() === articleId && existingFavoriteArticle.userId.toString() === userId) {
+            if (existingFavoriteArticle.articleId.toString() === articleId && existingFavoriteArticle.userId.toString() === userId.toString()) {
                 return res.status(200).json({ message: "Votre article n'est plus dans la liste des favoris" });
             } else {
                 const favorite = new Favorite({ userId, articleId });
