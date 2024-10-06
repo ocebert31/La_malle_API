@@ -15,16 +15,23 @@ const adminRoutes = require('./routes/admin')
 const categoriesRoutes = require('./routes/categories')
 
 mongoose.connect(process.env.CONNECT_MONGO_DB)
-  .then(() => {
-    console.log('Connexion à MongoDB réussie !')
-    createAdmin();
+    try {
+        console.log('Connexion à MongoDB réussie !')
+        createAdmin();
+        removeUserEmailIndex()
+    } catch {
+        console.log('Connexion à MongoDB échouée !')
+    }
+
+async function removeUserEmailIndex() {
     const User = mongoose.model('User');
-    
-    User.collection.dropIndex({ email: 1 })
-      .then(() => console.log('Index supprimé avec succès'))
-      .catch(err => console.error('Erreur lors de la suppression de l\'index:', err));
-      })
-  .catch(() => console.log('Connexion à MongoDB échouée !'));
+    try {
+        await User.collection.dropIndex({ email: 1 });
+        console.log('Index supprimé avec succès');
+    } catch (error) {
+        console.error('Erreur lors de la suppression de l\'index:', error);
+    }
+}
 
 app.use(express.json());
 
