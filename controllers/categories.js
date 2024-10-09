@@ -1,19 +1,24 @@
+const categories = require('../models/categories');
 const Category = require('../models/categories')
 
-exports.createCategory = (req, res) => {
+exports.createCategory = async (req, res) => {
     verifyIsAdmin(req)
-    const categories = new Category({
-        name: req.body.name,
-    });
-    categories.save()
-    .then(categories => { res.status(200).json({ categories})})
-    .catch(error => { res.status(400).json( { error })})
+    try {
+        const categories = new Category({name: req.body.name,});
+        await categories.save()
+        res.status(200).json({ message: 'Catégorie ajoutée avec succès', categories });
+    } catch(error) {
+        res.status(400).json({ message: 'Erreur lors de la création de la catégorie', error: error.message });
+    }
 };
 
-exports.getAllCategories = (req, res) => {
-    Category.find()
-        .then(categories => res.status(200).json(categories))
-        .catch(error => res.status(400).json({ error }));
+exports.getAllCategories = async (res) => {
+    try {
+        const categories = await Category.find();
+        res.status(200).json(categories);
+    } catch(error) {
+        res.status(400).json({ error });
+    }
 }
 
 exports.deleteCategory = async (req, res) => {
