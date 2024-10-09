@@ -7,15 +7,9 @@ const crypto = require('crypto');
 
 exports.registration = (req, res, next) => {
     const { email, password, confirmPassword } = req.body;
-
-    if (!email || email.trim() === '') {
-        return res.status(400).json({ message: 'L\'email est requis.' });
-    }
-
-    if (password !== confirmPassword) {
-        return res.status(400).json({ message: "Veuillez indiquer la bonne confirmation de mot de passe" });
-    }
-
+    requiredEmail(email, res)
+    requiredPassword(password, res)
+    confirmPasswordMatch(password, confirmPassword, res)
     User.findOne({ $or: [
         { email: email },
         { newEmail: email }
@@ -59,15 +53,19 @@ const passwordTooShort = (password) => {
 };
 
 exports.session = (req, res, next) => {
-    User.findOne({ email: req.body.email })
+    const { email, password } = req.body;
+    requiredEmail(email, res)
+    requiredPassword(password, res)
+    User.findOne({ email: email })
         .then(user => {
+            
             if (!user) {
                 return res.status(401).json({ message: 'Paire login/mot de passe incorrecte'});
             }
             if (user.confirmationToken) {
                 return res.status(403).json({ message: 'Veuillez confirmer votre email avant de vous connecter.' });
             }
-
+            
             bcrypt.compare(req.body.password, user.password)
                 .then(valid => {
                     if (!valid) {
@@ -137,9 +135,8 @@ exports.updateAvatarOptions = (req, res) => {
 exports.updateEmail = async (req, res) => {
     const { newEmail, currentPassword } = req.body;
     try {
-        if (!newEmail || newEmail.trim() === '') {
-            return res.status(400).json({ message: 'L\'email est requis.' });
-        }
+        requiredEmail(newEmail, res)
+        requiredPassword(currentPassword, res)
         const user = await User.findById(req.auth.userId);
         const isMatch = await bcrypt.compare(currentPassword, user.password);
 
@@ -171,15 +168,10 @@ exports.updateEmail = async (req, res) => {
 
 exports.updatePassword = async (req, res) => {
     const { currentPassword, newPassword, confirmNewPassword } = req.body;
-
-    if (!currentPassword || !newPassword || !confirmNewPassword) {
-        return res.status(400).json({ message: 'Veuillez fournir tous les champs requis : mot de passe actuel, nouveau mot de passe, et confirmation du nouveau mot de passe.' });
+    if (requiredPassword(currentPassword, res) || requiredPassword(newPassword, res) || requiredPassword(confirmNewPassword, res)) {
+        return; 
     }
-
-    if (newPassword !== confirmNewPassword) {
-        return res.status(400).json({ message: 'Le nouveau mot de passe et la confirmation ne correspondent pas.' });
-    }
-
+    confirmPasswordMatch(newPassword, confirmNewPassword, res);
     if (newPassword.length < 6) {
         return res.status(400).json({ message: 'Le nouveau mot de passe doit comporter au moins 6 caractères.' });
     }
@@ -210,17 +202,12 @@ exports.updatePassword = async (req, res) => {
 
 exports.forgotPassword = async (req, res) => {
     const { email } = req.body;
-    if (!email) {
-        return res.status(400).json({ message: "L'adresse e-mail est requise." });
-    }
-
+    requiredEmail(email, res)
     try {
-        
         const user = await User.findOne({ email});
         if (!user) {
             return res.status(400).json({ message: "Utilisateur non trouvé." });
         }
-        
         user.confirmationToken = crypto.randomBytes(20).toString('hex');
         await user.save();
 
@@ -235,13 +222,10 @@ exports.forgotPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
     const { token } = req.params;
     const { newPassword, confirmNewPassword } = req.body;
-
-    if (!newPassword || !confirmNewPassword) {
-        return res.status(400).json({ message: "Veuillez fournir le nouveau mot de passe et sa confirmation." });
+    if (requiredPassword(newPassword, res) || requiredPassword(confirmNewPassword, res)) {
+        return; 
     }
-    if (newPassword !== confirmNewPassword) {
-        return res.status(400).json({ message: "Les mots de passe ne correspondent pas." });
-    }
+    confirmPasswordMatch(newPassword, confirmNewPassword, res)
     try {
         const user = await User.findOne({
             confirmationToken: token,
@@ -316,9 +300,26 @@ exports.userData = async (req, res) => {
     try {
         const user = await User.findById(req.auth.userId).select('-password'); 
         if (!user) return res.status(404).json({ message: 'Utilisateur non trouvé' });
-
         res.json(user);
     } catch (error) {
         res.status(500).json({ message: 'Erreur serveur' });
     }
 };
+
+function requiredEmail(email, res) {
+    if (!email || email.trim() === '') {
+        return res.status(400).json({ message: "L'email est requis." });
+    }
+}
+
+function requiredPassword(password, res) {
+    if (!password || password.trim() === '') {
+        return res.status(400).json({ message: "Le mot de passe est requis" });
+    }
+}
+
+function confirmPasswordMatch(password, confirmPassword, res) {
+    if (password !== confirmPassword) {
+        return res.status(400).json({ message: "Les mots de passe doivent correspondre" })
+    }
+}
