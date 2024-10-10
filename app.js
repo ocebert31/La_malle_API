@@ -37,6 +37,7 @@ async function removeUserEmailIndex() {
 
 connectToMongoDB(); 
 
+
 app.use(express.json());
 
 app.use((req, res, next) => {

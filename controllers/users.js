@@ -5,113 +5,103 @@ const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-na
 const { sendConfirmationEmail } = require('../utils/sendConfirmationEmail');
 const crypto = require('crypto');
 
-exports.registration = (req, res, next) => {
+exports.registration = async (req, res) => {
     const { email, password, confirmPassword } = req.body;
-    requiredEmail(email, res)
-    requiredPassword(password, res)
-    confirmPasswordMatch(password, confirmPassword, res)
-    User.findOne({ $or: [
-        { email: email },
-        { newEmail: email }
-    ] })
-        .then(existingUser => {
-            if (existingUser) {
-               return res.status(400).json({ message: 'Cet email est déjà utilisé' });
-            }
-            if (passwordTooShort(password)) {
-                return res.status(400).json({ message: 'Le mot de passe doit comporter au moins 6 caractères' });
-            }
-            bcrypt.hash(password, 10)
-                .then(hash => {
-                    const pseudo = uniqueNamesGenerator({
-                        dictionaries: [colors, adjectives, animals],
-                        length: 3,
-                        separator: '_'
-                    });
-                    const confirmationToken = crypto.randomBytes(20).toString('hex')
-                    const user = new User({
-                        newEmail: email,
-                        password: hash,
-                        pseudo: pseudo,
-                        confirmationToken,
-                    });
-                    user.save()
-                        .then(() => sendConfirmationEmail(user, 'signup'))
-                        .then((info, error) => {
-                            res.status(201).json({ message: 'Utilisateur créé !' })
-                        })
-                        .catch(error => { res.status(400).json({ error })});
-                })
-                .catch(error => {res.status(500).json({ error })
-        });
-    })
-    .catch(error => res.status(500).json({ error }));
+    try {
+        requiredEmail(email);
+        requiredPassword(password);
+        confirmPasswordMatch(password, confirmPassword);
+        passwordTooShort(password);
+        checkExistingUser(email)
+        const user = await initializeUser(password, email)
+        await user.save();
+        await sendConfirmationEmail(user, 'signup');
+        return res.status(201).json({ message: 'Utilisateur créé avec succès !', user });
+    } catch (error) {
+        return res.status(500).json({ message: 'Erreur lors de la création de l\'utilisateur.', error: error.message });
+    }
 };
 
-const passwordTooShort = (password) => {
-    return password.length < 6;
-};
+async function initializeUser(password, email) {
+    const pseudo = uniqueNamesGenerator({
+        dictionaries: [colors, adjectives, animals],
+        length: 3,
+        separator: '_'
+    });
+    const confirmationToken = crypto.randomBytes(20).toString('hex');
+    const hashedPassword = await hashPassword(password);
+    const user = new User({
+        newEmail: email,
+        password: hashedPassword,
+        pseudo: pseudo,
+        confirmationToken,
+    });
+    return user;
+}
 
-exports.session = (req, res, next) => {
+exports.session = async (req, res) => {
     const { email, password } = req.body;
-    requiredEmail(email, res)
-    requiredPassword(password, res)
-    User.findOne({ email: email })
-        .then(user => {
-            
-            if (!user) {
-                return res.status(401).json({ message: 'Paire login/mot de passe incorrecte'});
-            }
-            if (user.confirmationToken) {
-                return res.status(403).json({ message: 'Veuillez confirmer votre email avant de vous connecter.' });
-            }
-            
-            bcrypt.compare(req.body.password, user.password)
-                .then(valid => {
-                    if (!valid) {
-                        return res.status(401).json({ message: 'Paire login/mot de passe incorrecte' });
-                    }
-                    res.status(200).json({
-                        user: user,
-                        token: jwt.sign(
-                            { userId: user._id, role: user.role, pseudo: user.pseudo },
-                            process.env.AUTH_TOKEN,
-                            { expiresIn: '24h' },
-                        )
-                    });
-                })
-        });
+    try {
+        const user = await User.findOne({ email: email });
+        requiredEmail(email)
+        requiredPassword(password)
+        await confirmPasswordHashMatch(password, user)
+        ensureUserPresence(user)
+        checkConfirmationEmail(user)
+        const token = generateToken(user);
+        res.status(200).json({user: user, token: token});
+    } catch (error) {
+        res.status(500).json({ message: "Impossible de se connecter", error: error.message });
+    }
 };
 
-exports.confirmation = (req, res) => {
+function checkConfirmationEmail(user) {
+    if (user.confirmationToken) {
+        throw new ValidationError("Veuillez confirmer votre email avant de vous connecter.");
+    }
+}
+
+function generateToken(user) {
+    const token = jwt.sign(
+        { userId: user._id, role: user.role, pseudo: user.pseudo },
+        process.env.AUTH_TOKEN,
+        { expiresIn: '24h' }
+    );
+    return token;
+}
+
+exports.confirmation = async (req, res) => {
     const { token } = req.params;
-
-    User.findOne({ confirmationToken: token })
-        .then(user => {
-            if (!user) {
-                return res.status(400).json({ message: 'Token invalide ou expiré.' });
-            }
-            const successMessage = user.email 
-                ? 'Votre adresse e-mail a été mise à jour avec succès.' 
-                : 'Compte confirmé avec succès.';
-
-            const errorMessage = user.email 
-                ? 'Erreur lors de la confirmation de l\'adresse e-mail.' 
-                : 'Erreur lors de la confirmation du compte.';
-
-            user.email = user.newEmail;
-            user.newEmail = undefined;
-            user.confirmationToken = undefined;
-            user.save()
-                .then(() => {
-                    res.status(200).json({ message: successMessage, user });
-                })
-                .catch(error => {
-                    res.status(500).json({ message: errorMessage, error: error.message });
-                });
-        })
-        .catch(error => res.status(500).json({ message: 'Erreur lors de la confirmation.', error: error.message }));
+    try {
+        const user = await User.findOne({ confirmationToken: token });
+        ensureUserPresence(user);
+        const { successMessage, errorMessage } = updateUserEmailOrAccount(user);
+        user.email = user.newEmail;
+        user.newEmail = undefined;
+        user.confirmationToken = undefined;
+        saveUserAndRespond(user, res, successMessage, errorMessage)
+    } catch (error) {
+        res.status(500).json({ message: 'Erreur lors de la confirmation.', error: error.message });
+    }
 };
+
+function updateUserEmailOrAccount(user) {
+    const successMessage = user.email ? 'Votre adresse e-mail a été mise à jour avec succès.' : 'Compte confirmé avec succès.';
+    const errorMessage = user.email ? 'Erreur lors de la confirmation de l\'adresse e-mail.' : 'Erreur lors de la confirmation du compte.';
+    return {successMessage, errorMessage}
+}
+
+async function saveUserAndRespond(user, res, successMessage, errorMessage) {
+    try {
+        await user.save();
+        res.status(200).json({ message: successMessage, user });
+    } catch (error) {
+        res.status(500).json({ message: errorMessage, error: error.message });
+    }
+}
+
+
+
 
 
 exports.updateAvatarOptions = (req, res) => {
@@ -124,9 +114,7 @@ exports.updateAvatarOptions = (req, res) => {
         { new: true } 
     )
     .then(user => {
-        if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
-        }
+        ensureUserPresence(user);
         res.status(200).json({ message: 'Options d\'avatar mises à jour', user });
     })
     .catch(error => res.status(500).json({ error }));
@@ -138,28 +126,13 @@ exports.updateEmail = async (req, res) => {
         requiredEmail(newEmail, res)
         requiredPassword(currentPassword, res)
         const user = await User.findById(req.auth.userId);
-        const isMatch = await bcrypt.compare(currentPassword, user.password);
-
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Mot de passe incorrect.' });
-        }
-
-        const verifyUniqueEmail = await User.findOne({ $or: [
-            { email: newEmail },
-            { newEmail: newEmail }
-        ] });
-
-        if (verifyUniqueEmail) {
-            return res.status(400).json({ message: 'Cette adresse e-mail est déjà utilisée.' });
-        }
-
+        passwordTooShort(currentPassword, res)
+        confirmPasswordHashMatch(currentPassword, user, res)
+        await checkExistingUser(newEmail)
         user.confirmationToken = crypto.randomBytes(20).toString('hex');
-        
         user.newEmail = newEmail;
-
         await user.save();
         await sendConfirmationEmail(user, 'update');
-
         res.status(200).json({ message: 'Un e-mail de confirmation a été envoyé à votre nouvelle adresse.' });
     } catch (error) {
         res.status(500).json({ message: 'Erreur lors de la mise à jour de l\'adresse e-mail.', error: error.message });
@@ -172,28 +145,14 @@ exports.updatePassword = async (req, res) => {
         return; 
     }
     confirmPasswordMatch(newPassword, confirmNewPassword, res);
-    if (newPassword.length < 6) {
-        return res.status(400).json({ message: 'Le nouveau mot de passe doit comporter au moins 6 caractères.' });
-    }
-
+    passwordTooShort(newPassword, res)
     try {
         const user = await User.findById(req.auth.userId);
-
-        if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé.' });
-        }
-
-        const isMatch = await bcrypt.compare(currentPassword, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Mot de passe actuel incorrect.' });
-        }
-
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-
+        ensureUserPresence(user);
+        await confirmPasswordHashMatch(currentPassword, user, res)
+        const hashedPassword = await hashPassword(newPassword);
         user.password = hashedPassword;
-       
         await user.save();
-
         res.status(200).json({ message: 'Mot de passe mis à jour avec succès.' });
     } catch (error) {
         res.status(500).json({ message: 'Erreur lors de la mise à jour du mot de passe.', error: error.message });
@@ -205,14 +164,10 @@ exports.forgotPassword = async (req, res) => {
     requiredEmail(email, res)
     try {
         const user = await User.findOne({ email});
-        if (!user) {
-            return res.status(400).json({ message: "Utilisateur non trouvé." });
-        }
+        ensureUserPresence(user);
         user.confirmationToken = crypto.randomBytes(20).toString('hex');
         await user.save();
-
         await sendConfirmationEmail(user, 'forgotPassword');
-
         res.status(200).json({ message: "Un e-mail de réinitialisation a été envoyé." });
     } catch (error) {
         res.status(500).json({ message: "Erreur lors de la demande de réinitialisation du mot de passe.", error: error.message });
@@ -222,28 +177,23 @@ exports.forgotPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
     const { token } = req.params;
     const { newPassword, confirmNewPassword } = req.body;
-    if (requiredPassword(newPassword, res) || requiredPassword(confirmNewPassword, res)) {
-        return; 
-    }
-    confirmPasswordMatch(newPassword, confirmNewPassword, res)
     try {
-        const user = await User.findOne({
-            confirmationToken: token,
-        });
-
-        if (!user) {
-            return res.status(400).json({ message: "Le token est invalide ou expiré." });
-        }
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        requiredPassword(newPassword);
+        requiredPassword(confirmNewPassword);
+        confirmPasswordMatch(newPassword, confirmNewPassword);
+        passwordTooShort(newPassword);
+        const user = await User.findOne({ confirmationToken: token });
+        ensureUserPresence(user);
+        const hashedPassword = await hashPassword(newPassword);
         user.password = hashedPassword;
         user.confirmationToken = undefined;
-
         await user.save();
-        res.status(200).json({ message: "Mot de passe réinitialisé avec succès." });
+        return res.status(200).json({ message: "Mot de passe réinitialisé avec succès." });
     } catch (error) {
-        res.status(500).json({ message: "Erreur lors de la réinitialisation du mot de passe.", error: error.message });
+        return res.status(500).json({ message: "Erreur lors de la réinitialisation du mot de passe.", error: error.message });
     }
 };
+
 
 exports.getAllUser = async (req, res) => {
     const { page = 1, limit = 10, searchQuery = '' } = req.query;
@@ -273,7 +223,6 @@ exports.getAllUser = async (req, res) => {
 exports.updateUserRole = async (req, res) => {
     const { id } = req.params;
     const { role } = req.body;
-
     try {
         if (!['author', 'reader', 'admin'].includes(role)) {
             return res.status(400).json({ message: 'Rôle invalide' });
@@ -283,15 +232,9 @@ exports.updateUserRole = async (req, res) => {
             { role },
             { new: true }
         );
-
-        if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
-        }
-
+        ensureUserPresence(user);
         res.json(user);
-        console.log(user)
     } catch (error) {
-        console.error(error);
         res.status(500).json({ message: 'Erreur du serveur' });
     }
 };
@@ -299,27 +242,76 @@ exports.updateUserRole = async (req, res) => {
 exports.userData = async (req, res) => {
     try {
         const user = await User.findById(req.auth.userId).select('-password'); 
-        if (!user) return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        ensureUserPresence(user);
         res.json(user);
     } catch (error) {
         res.status(500).json({ message: 'Erreur serveur' });
     }
 };
 
-function requiredEmail(email, res) {
+
+
+
+
+
+function requiredEmail(email) {
     if (!email || email.trim() === '') {
-        return res.status(400).json({ message: "L'email est requis." });
+        throw new ValidationError("L'email est requis." );
     }
 }
 
-function requiredPassword(password, res) {
+function requiredPassword(password) {
     if (!password || password.trim() === '') {
-        return res.status(400).json({ message: "Le mot de passe est requis" });
+        throw new ValidationError("Le mot de passe est requis" );
     }
 }
 
-function confirmPasswordMatch(password, confirmPassword, res) {
+function confirmPasswordMatch(password, confirmPassword) {
     if (password !== confirmPassword) {
-        return res.status(400).json({ message: "Les mots de passe doivent correspondre" })
+        throw new ValidationError("Les mots de passe doivent correspondre");
     }
 }
+
+async function confirmPasswordHashMatch(password, user) {
+    const isMatch = await bcrypt.compare(password, user.password); 
+    if (!isMatch) {
+        throw new ValidationError("Mot de passe incorrect.");
+    }
+}
+
+function passwordTooShort(password) {
+    if (password.length < 6) {
+        throw new ValidationError("Le mot de passe doit comporter au moins 6 caractères");
+    }
+}
+
+async function hashPassword(password) {
+    const hash = await bcrypt.hash(password, 10);
+    return hash;
+}
+
+async function checkExistingUser(email) {
+    const existingUser = await User.findOne({
+        $or: [
+            { email: email },
+            { newEmail: email }
+        ]
+    });
+    if (existingUser) {
+        throw new ValidationError("Cet email est déjà utilisé");
+    }
+}
+
+function ensureUserPresence(user) {
+    if (!user) {
+        throw new ValidationError("Aucun utilisateur n'a été trouvé");
+    }
+}ensureUserPresence
+
+class ValidationError extends Error {
+    constructor(message) {
+        super(message);
+        this.statusCode = 400; 
+    }
+}
+
