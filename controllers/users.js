@@ -1,9 +1,17 @@
-const bcrypt = require('bcrypt');
 const User = require('../models/users');
 const jwt = require('jsonwebtoken');
 const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-names-generator');
 const { sendConfirmationEmail } = require('../utils/sendConfirmationEmail');
 const crypto = require('crypto');
+const requiredEmail = require("../utils/validators/requiredEmail");
+const ValidationError = require("../utils/validators/validationError")
+const requiredPassword = require("../utils/validators/requiredPassword");
+const confirmPasswordMatch = require("../utils/validators/confirmPasswordMatch");
+const confirmPasswordHashMatch = require("../utils/validators/confirmPasswordHashMatch");
+const passwordTooShort = require("../utils/validators/passwordTooShort");
+const hashPassword = require("../utils/validators/hashPassword");
+const checkExistingUser = require("../utils/validators/checkExistingUser");
+const ensureUserPresence = require("../utils/validators/ensureUserPresence");
 
 exports.registration = async (req, res) => {
     const { email, password, confirmPassword } = req.body;
@@ -12,7 +20,7 @@ exports.registration = async (req, res) => {
         requiredPassword(password);
         confirmPasswordMatch(password, confirmPassword);
         passwordTooShort(password);
-        checkExistingUser(email)
+        await checkExistingUser(email)
         const user = await initializeUser(password, email)
         await user.save();
         await sendConfirmationEmail(user, 'signup');
@@ -248,64 +256,9 @@ exports.userData = async (req, res) => {
     }
 };
 
-function requiredEmail(email) {
-    if (!email || email.trim() === '') {
-        throw new ValidationError("L'email est requis." );
-    }
-}
 
-function requiredPassword(password) {
-    if (!password || password.trim() === '') {
-        throw new ValidationError("Le mot de passe est requis" );
-    }
-}
 
-function confirmPasswordMatch(password, confirmPassword) {
-    if (password !== confirmPassword) {
-        throw new ValidationError("Les mots de passe doivent correspondre");
-    }
-}
 
-async function confirmPasswordHashMatch(password, user) {
-    const isMatch = await bcrypt.compare(password, user.password); 
-    if (!isMatch) {
-        throw new ValidationError("Mot de passe incorrect.");
-    }
-}
 
-function passwordTooShort(password) {
-    if (password.length < 6) {
-        throw new ValidationError("Le mot de passe doit comporter au moins 6 caractères");
-    }
-}
 
-async function hashPassword(password) {
-    const hash = await bcrypt.hash(password, 10);
-    return hash;
-}
-
-async function checkExistingUser(email) {
-    const existingUser = await User.findOne({
-        $or: [
-            { email: email },
-            { newEmail: email }
-        ]
-    });
-    if (existingUser) {
-        throw new ValidationError("Cet email est déjà utilisé");
-    }
-}
-
-function ensureUserPresence(user) {
-    if (!user) {
-        throw new ValidationError("Aucun utilisateur n'a été trouvé");
-    }
-}
-
-class ValidationError extends Error {
-    constructor(message) {
-        super(message);
-        this.statusCode = 400; 
-    }
-}
 
