@@ -1,6 +1,4 @@
 const User = require('../models/users');
-const jwt = require('jsonwebtoken');
-const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-names-generator');
 const { sendConfirmationEmail } = require('../utils/sendConfirmationEmail');
 const crypto = require('crypto');
 const requiredEmail = require("../utils/validators/requiredEmail");
@@ -12,82 +10,41 @@ const passwordTooShort = require("../utils/validators/passwordTooShort");
 const hashPassword = require("../utils/validators/hashPassword");
 const checkExistingUser = require("../utils/validators/checkExistingUser");
 const ensureUserPresence = require("../utils/validators/ensureUserPresence");
+const registrationService = require("../services/users/registrationService")
+const sessionService = require("../services/users/sessionService");
 
 exports.registration = async (req, res) => {
-    const { email, password, confirmPassword } = req.body;
     try {
-        requiredEmail(email);
-        requiredPassword(password);
-        confirmPasswordMatch(password, confirmPassword);
-        passwordTooShort(password);
-        await checkExistingUser(email)
-        const user = await initializeUser(password, email)
-        await user.save();
-        await sendConfirmationEmail(user, 'signup');
+        const user = await registrationService(req.body);
         res.status(201).json({ message: 'Utilisateur créé avec succès !', user });
     } catch (error) {
         return res.status(500).json({ message: 'Erreur lors de la création de l\'utilisateur.', error: error.message });
     }
 };
 
-async function initializeUser(password, email) {
-    const pseudo = uniqueNamesGenerator({
-        dictionaries: [colors, adjectives, animals],
-        length: 3,
-        separator: '_'
-    });
-    const confirmationToken = crypto.randomBytes(20).toString('hex');
-    const hashedPassword = await hashPassword(password);
-    const user = new User({
-        newEmail: email,
-        password: hashedPassword,
-        pseudo: pseudo,
-        confirmationToken,
-    });
-    return user;
-}
-
 exports.session = async (req, res) => {
-    const { email, password } = req.body;
     try {
-        const user = await User.findOne({ email: email });
-        requiredEmail(email)
-        requiredPassword(password)
-        await confirmPasswordHashMatch(password, user)
-        ensureUserPresence(user)
-        checkConfirmationEmail(user)
-        const token = generateToken(user);
+        const {user, token} = await sessionService(req.body)
         res.status(200).json({user: user, token: token});
     } catch (error) {
         res.status(500).json({ message: "Impossible de se connecter", error: error.message });
     }
 };
 
-function checkConfirmationEmail(user) {
-    if (user.confirmationToken) {
-        throw new ValidationError("Veuillez confirmer votre email avant de vous connecter.");
-    }
-}
-
-function generateToken(user) {
-    const token = jwt.sign(
-        { userId: user._id, role: user.role, pseudo: user.pseudo },
-        process.env.AUTH_TOKEN,
-        { expiresIn: '24h' }
-    );
-    return token;
-}
+//A refacto
 
 exports.confirmation = async (req, res) => {
     const { token } = req.params;
     try {
         const user = await User.findOne({ confirmationToken: token });
         ensureUserPresence(user);
+        console.log(user)
         const { successMessage, errorMessage } = updateUserEmailOrAccount(user);
         user.email = user.newEmail;
         user.newEmail = undefined;
         user.confirmationToken = undefined;
         saveUserAndRespond(user, res, successMessage, errorMessage)
+        res.status(201).json({ message: 'La confirmation a été un succès !'});
     } catch (error) {
         res.status(500).json({ message: 'Erreur lors de la confirmation.', error: error.message });
     }
