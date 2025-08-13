@@ -38,30 +38,37 @@ exports.confirmation = async (req, res) => {
     try {
         const user = await User.findOne({ confirmationToken: token });
         ensureUserPresence(user);
-        console.log(user)
         const { successMessage, errorMessage } = updateUserEmailOrAccount(user);
         user.email = user.newEmail;
         user.newEmail = undefined;
         user.confirmationToken = undefined;
-        saveUserAndRespond(user, res, successMessage, errorMessage)
-        res.status(201).json({ message: 'La confirmation a été un succès !'});
+        const result = await saveUserAndRespond(user);
+        if (result.success) {
+            res.status(201).json({ message: successMessage, user: result.user });
+        } else {
+            res.status(500).json({ message: errorMessage, error: result.error.message });
+        }
     } catch (error) {
         res.status(500).json({ message: 'Erreur lors de la confirmation.', error: error.message });
     }
 };
 
 function updateUserEmailOrAccount(user) {
-    const successMessage = user.email ? 'Votre adresse e-mail a été mise à jour avec succès.' : 'Compte confirmé avec succès.';
-    const errorMessage = user.email ? 'Erreur lors de la confirmation de l\'adresse e-mail.' : 'Erreur lors de la confirmation du compte.';
-    return {successMessage, errorMessage}
+    const successMessage = user.email
+        ? 'Votre adresse e-mail a été mise à jour avec succès.'
+        : 'Compte confirmé avec succès.';
+    const errorMessage = user.email
+        ? 'Erreur lors de la confirmation de l\'adresse e-mail.'
+        : 'Erreur lors de la confirmation du compte.';
+    return { successMessage, errorMessage };
 }
 
-async function saveUserAndRespond(user, res, successMessage, errorMessage) {
+async function saveUserAndRespond(user) {
     try {
         await user.save();
-        res.status(200).json({ message: successMessage, user });
+        return { success: true, user };
     } catch (error) {
-        res.status(500).json({ message: errorMessage, error: error.message });
+        return { success: false, error };
     }
 }
 

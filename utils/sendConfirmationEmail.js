@@ -27,8 +27,8 @@ const html = (user, confirmationType) => {
   return `<html>
     <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; margin: 0;">
       <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-        <div style="background-color: #6d4cb4; color: #ffffff; padding: 20px; text-align: center;">
-          <h1 style="margin: 0; font-size: 24px;">Bienvenue sur Inkstream</h1>
+        <div style="background-color: #7a6bfc; color: #ffffff; padding: 20px; text-align: center;">
+          <h1 style="margin: 0; font-size: 24px;">Bienvenue sur La malle</h1>
         </div>
         <div style="padding: 30px;">
           <h2 style="color: #333333; font-size: 20px;">
@@ -44,7 +44,7 @@ const html = (user, confirmationType) => {
                 : 'Pour réinitialiser votre mot de passe, cliquez sur le bouton ci-dessous :'}
           </p>
           <div style="text-align: center; margin: 40px 0;">
-            <a href='${confirmationLink(user, confirmationType)}' style="background-color: #ff8f5f; color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 5px; font-size: 18px; display: inline-block;">
+            <a href='${confirmationLink(user, confirmationType)}' style="background-color: #a6d947; color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 5px; font-size: 18px; display: inline-block;">
               
                ${confirmationType !== 'forgotPassword' ? 'Confirmez votre adresse email' : 'Confirmez afin de réinitialiser votre mot de passe'}
             </a>
@@ -54,7 +54,7 @@ const html = (user, confirmationType) => {
           </p>
         </div>
         <div style="background-color: #f4f4f4; color: #999999; padding: 20px; text-align: center; font-size: 12px;">
-          &copy; 2024 Inkstream. Tous droits réservés.
+          &copy; 2025 La malle. Tous droits réservés.
         </div>
       </div>
     </body>

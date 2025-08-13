@@ -13,6 +13,7 @@ const votesRoutes = require('./routes/votes');
 const favoritesRoutes = require('./routes/favorites');
 const adminRoutes = require('./routes/admin')
 const categoriesRoutes = require('./routes/categories')
+const cors = require('cors');
 
 async function connectToMongoDB() {
     try {
@@ -46,6 +47,12 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
   next();
 });
+
+app.use(cors({
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use('/articles', articlesRoutes);
 app.use('/auth', usersRoutes);
