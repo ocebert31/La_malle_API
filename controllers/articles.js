@@ -16,7 +16,8 @@ exports.createArticle = async (req, res) => {
         tags: tags,
         imageUrl,
         userId: req.auth.userId,
-        categoryId: req.body.categoryId
+        categoryId: req.body.categoryId,
+        price: req.body.price,
     });
     if (tags && tags.length > 5) {
         return res.status(404).json({ message: 'Seulement 5 tags sont autorisés' });
@@ -88,6 +89,7 @@ exports.getAllArticles = async (req, res) => {
                     imageUrl: 1,
                     content: 1,
                     tags: 1,
+                    price: 1,
                     createdAt: 1,
                     pseudo: '$user.pseudo',
                     categoryName: '$category.name',
@@ -104,8 +106,6 @@ exports.getAllArticles = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-
-
 
 exports.getOneArticle =  async (req, res) => {
     let favorite = null;
@@ -185,6 +185,7 @@ exports.getOneArticle =  async (req, res) => {
                 imageUrl: 1,
                 content: 1,
                 tags: 1, 
+                price: 1,
                 createdAt: 1,
                 userId: 1,
                 pseudo: '$user.pseudo',
@@ -236,7 +237,8 @@ exports.updateArticle = (req, res) => {
                 title: req.body.title,
                 content: req.body.content,
                 tags: tags,
-                categoryId: req.body.categoryId
+                categoryId: req.body.categoryId,
+                price: req.body.price,
             };
             if (req.file) {
                 const oldFilename = article.imageUrl.split('/images/')[1];
@@ -277,6 +279,7 @@ exports.updateArticle = (req, res) => {
                             title: 1,
                             content: 1,
                             tags: 1,
+                            price: 1,
                             imageUrl: 1,
                             createdAt: 1,
                             pseudo: '$user.pseudo',
