@@ -13,6 +13,7 @@ const votesRoutes = require('./routes/votes');
 const favoritesRoutes = require('./routes/favorites');
 const adminRoutes = require('./routes/admin')
 const categoriesRoutes = require('./routes/categories')
+const contactRoutes = require('./routes/contact')
 const cors = require('cors');
 
 async function connectToMongoDB() {
@@ -60,7 +61,8 @@ app.use('/comments', commentsRoutes);
 app.use('/votes', votesRoutes);
 app.use('/favorites', favoritesRoutes);
 app.use('/admin', adminRoutes);
-app.use('/categories', categoriesRoutes)
+app.use('/categories', categoriesRoutes);
+app.use('/contact', contactRoutes);
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(errorHandler);
 
