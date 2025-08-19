@@ -13,6 +13,11 @@ const contactSchema = mongoose.Schema({
         enum: ['Faible', 'Moyenne', 'Élevée'],
         required: true,
     },
+    status: {
+        type: String,
+        enum: ['En attente', 'Acceptée', 'Rejetée', 'En cours'],
+        default: 'En attente',
+    },
     rgpd: { type: Boolean, required: true},
 }, {timestamps: true});
 
