@@ -7,7 +7,18 @@ const contactSchema = mongoose.Schema({
     phone: { type: String, required: true},
     description: { type: String, required: true},
     typeRequest: { type: String, required: true},
-    desiredDate: { type: Date, required: true},
+    desiredDate: { 
+        type: Date, 
+        required: true,
+        validate: {
+            validator: function(value) {
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                return value > today;
+            },
+            message: 'La date désirée doit être supérieure à la date du jour.'
+        }
+    },
     urgence: {
         type: String,
         enum: ['Faible', 'Moyenne', 'Élevée'],
