@@ -95,7 +95,7 @@ exports.updateEmail = async (req, res) => {
         requiredPassword(currentPassword)
         const user = await User.findById(req.auth.userId);
         passwordTooShort(currentPassword)
-        confirmPasswordHashMatch(currentPassword, user)
+        await confirmPasswordHashMatch(currentPassword, user)
         await checkExistingUser(newEmail)
         user.confirmationToken = crypto.randomBytes(20).toString('hex');
         user.newEmail = newEmail;

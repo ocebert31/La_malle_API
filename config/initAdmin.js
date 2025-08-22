@@ -2,35 +2,28 @@ const bcrypt = require('bcrypt');
 const User = require('../models/users');
 
 async function createAdminUser() {
-    const adminEmail = process.env.ADMIN_EMAIL;
-    const adminPassword = process.env.ADMIN_PASSWORD ;
     try {
-        const adminExists = await User.findOne({ email: adminEmail });
-        await initializeAdmin(adminExists, adminPassword, adminEmail)
+        const adminExists = await User.findOne({ role: 'admin' });
+        if (adminExists) {
+            console.info("ℹ️ Un admin existe déjà. Aucune action automatique via .env");
+            return;
+        }
+        const admin = await buildAdminFromEnv();
+        await admin.save();
+        console.log("✅ Admin créé avec succès !");
     } catch (error) {
-        console.error(error);
+        console.error("❌ Erreur lors de la création de l'admin :", error);
     }
 }
 
-async function initializeAdmin(adminExists, adminPassword, adminEmail) {
-    if (!adminExists) {
-        const adminUser = await buildAdminUser(adminPassword, adminEmail)
-        await adminUser.save();
-        console.log("L'admin a été créé");
-    } else {
-        console.log("L'admin existe déjà");
-    }
-}
-
-async function buildAdminUser(adminPassword, adminEmail) {
-    const hashedPassword = await bcrypt.hash(adminPassword, 10);
-    const adminUser = new User({
-        email: adminEmail,
-        password: hashedPassword,
+async function buildAdminFromEnv() {
+    const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
+    return new User({
         pseudo: 'Admin',
-        role: 'admin'
+        email: process.env.ADMIN_EMAIL,
+        password: hashedPassword,
+        role: 'admin',
     });
-    return adminUser;
 }
 
 module.exports = createAdminUser;
