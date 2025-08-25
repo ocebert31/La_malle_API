@@ -14,6 +14,8 @@ const favoritesRoutes = require('./routes/favorites');
 const adminRoutes = require('./routes/admin')
 const categoriesRoutes = require('./routes/categories')
 const contactRoutes = require('./routes/contact')
+const { purgeDeletedUsers } = require('./controllers/users');
+const cron = require('node-cron');
 const cors = require('cors');
 
 async function connectToMongoDB() {
@@ -30,15 +32,20 @@ async function connectToMongoDB() {
 async function removeUserEmailIndex() {
     const User = mongoose.model('User');
     try {
-        await User.collection.dropIndex({ email: 1 });
-        console.log('Index supprimé avec succès');
+      await User.collection.dropIndex({ email: 1 });
+      console.log('Index supprimé avec succès');
     } catch (error) {
-        console.error('Erreur lors de la suppression de l\'index:', error);
+      console.error('Erreur lors de la suppression de l\'index:', error);
     }
 }
 
-connectToMongoDB(); 
+// Tous les dimanches à minuit
+cron.schedule('0 0 * * 0', () => {
+  console.log('Lancement automatique de la purge des utilisateurs supprimés...');
+  purgeDeletedUsers();
+});
 
+connectToMongoDB(); 
 
 app.use(express.json());
 

@@ -25,6 +25,9 @@ exports.registration = async (req, res) => {
 exports.session = async (req, res) => {
     try {
         const {user, token} = await sessionService(req.body)
+        if (user.deleted_at) {
+            return res.status(403).json({ message: "Compte supprimé" });
+        }
         res.status(200).json({user: user, token: token});
     } catch (error) {
         res.status(500).json({ message: "Impossible de se connecter", error: error.message });
@@ -32,7 +35,6 @@ exports.session = async (req, res) => {
 };
 
 //A refacto
-
 exports.confirmation = async (req, res) => {
     const { token } = req.params;
     try {
@@ -168,7 +170,7 @@ exports.getAllUser = async (req, res) => {
     const usersLimit = parseInt(limit, 10);
     const skip = (currentPage - 1) * usersLimit;
     try {
-        const users = await User.find(buildSearchFilter(searchQuery))
+        const users = await User.find({deleted_at: null, ...buildSearchFilter(searchQuery)})
             .skip(skip)
             .limit(usersLimit);
         res.status(200).json({ page: currentPage, limit: usersLimit, users});
@@ -212,17 +214,35 @@ async function updateUserRoleInDB(id, role) {
 
 exports.userData = async (req, res) => {
     try {
-        const user = await User.findById(req.auth.userId).select('-password'); 
+        const user = await User.findById(req.auth.userId).select('-password');
         ensureUserPresence(user);
+        if (user.deleted_at) return res.status(403).json({ message: "Compte supprimé" });
         res.json(user);
     } catch (error) {
         res.status(500).json({ message: 'Erreur serveur' });
     }
 };
 
+exports.deleteUserByAdmin = async (req, res) => {
+    const { id } = req.params;
+    try {
+        if (req.auth.role !== 'admin') return res.status(403).json({ message: "Accès refusé" });
+        const user = await User.findById(id);
+        ensureUserPresence(user);
+        user.deleted_at = new Date();
+        await user.save();
+        res.status(200).json({ message: "Compte marqué comme supprimé" });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de la suppression du compte", error: error.message });
+    }
+};
 
-
-
-
-
-
+exports.purgeDeletedUsers = async () => {
+    try {
+        const threshold = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const result = await User.deleteMany({ deleted_at: { $lt: threshold } });
+        console.log(`Purge des comptes supprimés : ${result.deletedCount} utilisateurs supprimés définitivement.`);
+    } catch (error) {
+        console.error("Erreur lors de la purge des utilisateurs supprimés :", error.message);
+    }
+};

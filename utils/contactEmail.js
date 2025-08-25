@@ -24,7 +24,7 @@ const html = (newDemande) => {
   <html>
     <body style="font-family: Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 0;">
       <div style="max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"> 
-        <div style="background-color: #7a6bfc; color: #ffffff; padding: 20px; text-align: center;">
+        <div style="background-color: #5941FF; color: #ffffff; padding: 20px; text-align: center;">
           <h2 style="margin: 0;">Nouvelle demande d'animateur</h2>
         </div>
         <div style="padding: 20px;">

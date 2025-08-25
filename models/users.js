@@ -14,6 +14,7 @@ const userSchema = mongoose.Schema({
         of: String, 
         default: {} 
     },
+    deleted_at: { type: Date, default: null },
 }, {timestamps: true})
 
 userSchema.plugin(uniqueValidator);
