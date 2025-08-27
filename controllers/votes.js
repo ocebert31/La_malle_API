@@ -5,9 +5,9 @@ exports.createVote = async (req, res) => {
     const voteType = req.body.voteType;
     const userId = req.auth.userId;
     const commentId = req.body.commentId || null;
-    const articleId = req.body.articleId || null;
-    const voteParams = _.pickBy({ userId, commentId, articleId }, value => value !== null);
-    const paramsForVote = {voteType, userId, commentId, articleId}
+    const serviceId = req.body.serviceId || null;
+    const voteParams = _.pickBy({ userId, commentId, serviceId }, value => value !== null);
+    const paramsForVote = {voteType, userId, commentId, serviceId}
     try {
         const existingVote = await Vote.findOne(voteParams);
         await checkUserAlreadyVoted(existingVote, paramsForVote, res)

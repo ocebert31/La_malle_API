@@ -1,14 +1,14 @@
-const Article = require('../models/articles')
+const Service = require('../models/services')
 const Comment = require('../models/comments')
 const User = require('../models/users');
 const Contact = require('../models/contact');
 
 exports.getAllStat = async (req, res) => {
     try {
-        const articlesCount = await Article.countDocuments({});
+        const servicesCount = await Service.countDocuments({});
         const commentsCount = await Comment.countDocuments({});
         const usersCount = await User.countDocuments({});
-        res.status(200).json({ articlesCount, commentsCount, usersCount});
+        res.status(200).json({ servicesCount, commentsCount, usersCount});
     } catch (error) {
         res.status(400).json({ error });
     }

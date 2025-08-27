@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 exports.createComments = async(req, res) => {
     const comment = new Comment({
         content: req.body.content,
-        articleId: req.body.articleId,
+        serviceId: req.body.serviceId,
         userId: req.auth.userId,
         commentId: req.body.commentId
     });
@@ -14,7 +14,7 @@ exports.createComments = async(req, res) => {
 }
 
 exports.getAllComments = async (req, res) => {
-    const articleId = req.query.articleId;
+    const serviceId = req.query.serviceId;
     const userId = req.auth && req.auth.userId ? new mongoose.Types.ObjectId(req.auth.userId): null;
     const { page = 1, limit = 20 } = req.query;
     try {
@@ -22,7 +22,7 @@ exports.getAllComments = async (req, res) => {
         const commentsLimit = parseInt(limit, 10);
         const comments = await Comment.aggregate([
             {
-                $match: { articleId: articleId }
+                $match: { serviceId: serviceId }
             },
             {
                 $sort: { createdAt: 1 }
@@ -87,7 +87,7 @@ exports.getAllComments = async (req, res) => {
             {
                 $project: {
                     content: 1,
-                    articleId: 1,
+                    serviceId: 1,
                     userId: 1,
                     commentId: 1,
                     pseudo: '$user.pseudo',

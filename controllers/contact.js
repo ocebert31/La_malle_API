@@ -1,11 +1,11 @@
 const { contactEmail } = require('../utils/contactEmail');
 const Contact = require('../models/contact'); 
 
-exports.createRequest = async (req, res) => {
+exports.createContact = async (req, res) => {
     const { name, firstName, email, phone, description, typeRequest, desiredDate, urgence, status, rgpd } = req.body;
     if (rgpd !== true) return res.status(400).json({ message: 'Vous devez accepter le traitement des données.' });
     try {
-        const newRequest = new Contact({
+        const newContact = new Contact({
             name, 
             firstName, 
             email,
@@ -17,30 +17,30 @@ exports.createRequest = async (req, res) => {
             status,
             rgpd
         });
-        await newRequest.save();
-        await contactEmail(newRequest);
+        await newContact.save();
+        await contactEmail(newContact);
         res.status(200).json({ message: 'Demande enregistrée et mail envoyé avec succès' });
     } catch (err) {
         res.status(500).json({ message: 'Erreur lors de l’enregistrement ou de l’envoi', error: err });
     }
 };
 
-exports.getAllRequests = async (req, res) => {
+exports.getAllContacts = async (req, res) => {
     const { page = 1, limit = 10, searchQuery = '', urgency, status } = req.query;
     const currentPage = parseInt(page, 10);
-    const requestsLimit = parseInt(limit, 10);
-    const skip = (currentPage - 1) * requestsLimit;
+    const contactsLimit = parseInt(limit, 10);
+    const skip = (currentPage - 1) * contactsLimit;
     try {
-        const requests = await Contact.find(buildSearchFilterRequest(searchQuery, urgency, status))
+        const contacts = await Contact.find(buildSearchFilterContact(searchQuery, urgency, status))
             .skip(skip)
-            .limit(requestsLimit);
-        res.status(200).json({ page: currentPage, limit: requestsLimit, requests});
+            .limit(contactsLimit);
+        res.status(200).json({ page: currentPage, limit: contactsLimit, contacts});
     } catch (err) {
         res.status(500).json({ message: 'Erreur lors de la récupération des demandes', error: err });
     }
 };
 
-function buildSearchFilterRequest(searchQuery, urgency, status) {
+function buildSearchFilterContact(searchQuery, urgency, status) {
     const filter = {};
     if (searchQuery) {
         filter.$or = [
@@ -57,7 +57,7 @@ function buildSearchFilterRequest(searchQuery, urgency, status) {
     return filter;
 }
 
-exports.updateRequestStatus = async (req, res) => {
+exports.updateContactStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
     const trimmedId = id.trim(); 
@@ -65,13 +65,13 @@ exports.updateRequestStatus = async (req, res) => {
         return res.status(400).json({ message: 'Statut invalide' });
     }
     try {
-        const updatedRequest = await Contact.findByIdAndUpdate(
+        const updatedContact = await Contact.findByIdAndUpdate(
             trimmedId,
             { status },
             { new: true }
         );
-        if (!updatedRequest) return res.status(404).json({ message: 'Demande non trouvée' });
-        res.status(200).json({ message: 'Statut mis à jour', request: updatedRequest });
+        if (!updatedContact) return res.status(404).json({ message: 'Demande non trouvée' });
+        res.status(200).json({ message: 'Statut mis à jour', contact: updatedContact });
     } catch (err) {
         res.status(500).json({ message: 'Erreur lors de la mise à jour du statut', error: err });
     }

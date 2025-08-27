@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const articleSchema = mongoose.Schema({
+const serviceSchema = mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true},
   price: { type: Number, required: false, min: 0 },
@@ -10,4 +10,4 @@ const articleSchema = mongoose.Schema({
   tags: { type: [String] },
 }, {timestamps: true});
 
-module.exports = mongoose.model('Article', articleSchema);
+module.exports = mongoose.model('Service', serviceSchema);

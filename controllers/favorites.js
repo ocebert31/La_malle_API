@@ -1,34 +1,34 @@
 const Favorite = require('../models/favorites');
 
-exports.createFavorite = async (req, res) => {
-    const articleId = req.body.articleId;
+exports.createFavoriteService = async (req, res) => {
+    const serviceId = req.body.serviceId;
     const userId = req.auth.userId;
     try {
-        const existingFavoriteArticle = await Favorite.findOne({ userId, articleId });
-        await checkExistingFavoriteArticle(existingFavoriteArticle, userId, articleId, res)
+        const existingFavoriteService = await Favorite.findOne({ userId, serviceId });
+        await checkExistingFavoriteService(existingFavoriteService, userId, serviceId, res)
     } catch (error) {
         console.error(error)
         res.status(500).json({ error: error.message });
     }
 };
 
-async function checkExistingFavoriteArticle(existingFavoriteArticle, userId, articleId, res) {
-    if (existingFavoriteArticle) {
-        await Favorite.deleteOne({ _id: existingFavoriteArticle._id });
-        handleExistingFavoriteArticle(existingFavoriteArticle, userId, articleId, res);
+async function checkExistingFavoriteService(existingFavoriteService, userId, serviceId, res) {
+    if (existingFavoriteService) {
+        await Favorite.deleteOne({ _id: existingFavoriteService._id });
+        handleExistingFavoriteService(existingFavoriteService, userId, serviceId, res);
     } else {
-        const favorite = new Favorite({ userId, articleId});
+        const favorite = new Favorite({ userId, serviceId});
         await favorite.save();
-        return res.status(201).json({ message: 'Article ajouté dans la liste des favoris', favorite });
+        return res.status(201).json({ message: 'Service ajouté dans la liste des favoris', favorite });
     }
 }
 
-async function handleExistingFavoriteArticle(existingFavoriteArticle, userId, articleId, res) {
-    if (existingFavoriteArticle.articleId.toString() === articleId && existingFavoriteArticle.userId.toString() === userId.toString()) {
-        return res.status(200).json({ message: "Votre article n'est plus dans la liste des favoris" });
+async function handleExistingFavoriteService(existingFavoriteService, userId, serviceId, res) {
+    if (existingFavoriteService.serviceId.toString() === serviceId && existingFavoriteService.userId.toString() === userId.toString()) {
+        return res.status(200).json({ message: "Votre service n'est plus dans la liste des favoris" });
     } else {
-        const favorite = new Favorite({ userId, articleId });
+        const favorite = new Favorite({ userId, serviceId });
         await favorite.save();
-        return res.status(200).json({ message: 'Votre article est dans la liste des favoris', favorite });
+        return res.status(200).json({ message: 'Votre service est dans la liste des favoris', favorite });
     }
 }

@@ -8,7 +8,7 @@ const statController = require('../controllers/stat');
 router.get('/', auth, authenticated, adminController.getAllUser);
 router.put('/:id', auth, authenticated, adminController.updateUserRole);
 router.get('/stat', auth, authenticated, statController.getAllStat);
-router.get('/stat-contact', auth, authenticated, statController.getMonthlyStats);
+router.get('/stat-monthly', auth, authenticated, statController.getMonthlyStats);
 router.delete('/:id', auth, authenticated, adminController.deleteUserByAdmin);
 
 module.exports = router;

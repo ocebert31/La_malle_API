@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 3001;
 const mongoose = require('mongoose');
-const articlesRoutes = require('./routes/articles');
+const servicesRoutes = require('./routes/services');
 const path = require('path');
 const errorHandler = require('./middlewares/errorHandler');
 const usersRoutes = require('./routes/users');
@@ -62,7 +62,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use('/articles', articlesRoutes);
+app.use('/services', servicesRoutes);
 app.use('/auth', usersRoutes);
 app.use('/comments', commentsRoutes);
 app.use('/votes', votesRoutes);
