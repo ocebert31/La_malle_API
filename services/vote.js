@@ -14,22 +14,12 @@ async function createVote(req, res) {
 
 async function checkUserAlreadyVoted(existingVote, paramsForVote, res) {
     if (existingVote) {
-        await handleExistingVote(existingVote, paramsForVote, res)
-    } else {
-        const vote = new Vote(paramsForVote);
-        await vote.save();
-        return res.status(201).json({ message: 'Vote enregistré avec succès', vote });
-    }
-}
-
-async function handleExistingVote(existingVote, paramsForVote, res) {
-    await Vote.deleteOne({ _id: existingVote._id });
-    if (existingVote.voteType === paramsForVote.voteType) {
+        await Vote.deleteOne({ _id: existingVote._id });
         return res.status(200).json({ message: 'Vote supprimé avec succès' });
     } else {
         const vote = new Vote(paramsForVote);
         await vote.save();
-        return res.status(200).json({ message: 'Vote changé avec succès', vote });
+        return res.status(201).json({ message: 'Vote enregistré avec succès', vote });
     }
 }
 
