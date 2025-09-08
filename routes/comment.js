@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middlewares/auth');
+const auth = require('../middlewares/authenticateJWT');
 const commentController = require('../controllers/comments');
-const authenticated = require('../middlewares/authenticated');
+const authenticated = require('../middlewares/requireAuth');
 
 router.post('/', auth, authenticated, commentController.createComments);
 router.get('/', auth, commentController.getAllComments);

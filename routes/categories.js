@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const categoriesController = require('../controllers/categories');
-const authenticated = require('../middlewares/authenticated');
-const auth = require('../middlewares/auth');
+const requireAuth = require('../middlewares/requireAuth');
+const authenticateJWT = require('../middlewares/authenticateJWT');
+const requireAdmin = require('../middlewares/requireAdmin')
 
-router.post('/', auth, authenticated, categoriesController.createCategory);
-router.get('/', auth, categoriesController.getAllCategories);
-router.delete('/:id', auth, authenticated, categoriesController.deleteCategory);
-router.put('/:id', auth, authenticated, categoriesController.updateCategory);
+router.post('/', authenticateJWT, requireAuth, requireAdmin, categoriesController.createCategory);
+router.get('/', authenticateJWT, categoriesController.getAllCategories);
+router.delete('/:id', authenticateJWT, requireAuth, requireAdmin, categoriesController.deleteCategory);
+router.put('/:id', authenticateJWT, requireAuth, requireAdmin, categoriesController.updateCategory);
 
 module.exports = router;

@@ -1,64 +1,22 @@
-const categories = require('../models/categories');
-const Category = require('../models/categories')
+const categoryService = require('../services/category');
+const asyncHandler = require('../middlewares/asyncHandler');
 
-exports.createCategory = async (req, res) => {
-    verifyIsAdmin(req)
-    try {
-        const categories = new Category({name: req.body.name,});
-        await categories.save()
-        res.status(200).json({ message: 'Catégorie ajoutée avec succès', categories });
-    } catch(error) {
-        res.status(400).json({ message: 'Erreur lors de la création de la catégorie', error: error.message });
-    }
-};
+exports.createCategory = asyncHandler(async (req, res) => {
+    const categories = await categoryService.createCategory(req.body.name);
+    res.status(201).json({ message: 'Catégorie ajoutée avec succès', categories });
+});
 
-exports.getAllCategories = async (req, res) => {
-    try {
-        const categories = await Category.find();
-        res.status(200).json(categories);
-    } catch(error) {
-        res.status(400).json({ message: 'Erreur lors de la récupération des catégories', error: error.message });
-    }
-}
+exports.getAllCategories = asyncHandler(async (req, res) => {
+    const categories = await categoryService.getAllCategories();
+    res.status(200).json(categories);
+});
 
-exports.deleteCategory = async (req, res) => {
-    try {
-        verifyIsAdmin(req)
-        const category = await verifyExistingCategory(req, res)
-        await category.deleteOne();
-        return res.status(200).json({ message: 'Catégorie supprimée avec succès' });
-    } catch (error) {
-        return res.status(500).json({ message: 'Erreur lors de la suppression de la catégorie', error: error.message });
-    }
-};
+exports.deleteCategory = asyncHandler(async (req, res) => {
+    await categoryService.deleteCategory(req.params.id);
+    res.status(200).json({ message: 'Catégorie supprimée avec succès' });
+});
 
-exports.updateCategory = async (req, res) => {
-  try {
-    const { name } = req.body; 
-    verifyIsAdmin(req)
-    const category = await verifyExistingCategory(req, res)
-    category.name = name;
-    const updatedCategory = await category.save();
-    return res.status(200).json({ message: 'Catégorie mise à jour avec succès', category: updatedCategory });
-  } catch (error) {
-    return res.status(500).json({ message: 'Erreur lors de la mise à jour de la catégorie', error: error.message });
-  }
-};
-
-function verifyIsAdmin(req) {
-    if(!req.auth || req.auth.role !== 'admin') {
-        const error = new Error('Requête non autorisée');
-        error.status = 403;
-        throw error; 
-    }
-}
-
-async function verifyExistingCategory(req, res) {
-    const { id } = req.params; 
-    const category = await Category.findById(id);
-    if (!category) {
-      return res.status(404).json({ message: 'Catégorie non trouvée' });
-    } else {
-        return category;
-    }
-}
+exports.updateCategory = asyncHandler(async (req, res) => {
+    const updatedCategory = await categoryService.updateCategory(req.params.id, req.body.name);
+    res.status(200).json({ message: 'Catégorie mise à jour avec succès', category: updatedCategory });
+});
