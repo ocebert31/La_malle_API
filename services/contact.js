@@ -1,5 +1,6 @@
 const Contact = require('../models/contact');
 const { contactEmail } = require('../utils/contactEmail');
+const assert = require("../utils/errorHandler")
 
 async function createContact(data) {
     assert(data.rgpd !== true, 'Vous devez accepter le traitement des données.', 400)
@@ -40,14 +41,6 @@ async function updateContactStatus(id, status) {
     const updatedContact = await Contact.findByIdAndUpdate( id.trim(), { status }, { new: true } );
     assert(!updatedContact, 'Demande non trouvée', 404)
     return updatedContact;
-}
-
-function assert(context, message, code) {
-    if(context) {
-        const error = new Error(message);
-        error.status = code;
-        throw error;
-    }
 }
 
 module.exports = { createContact, getAllContacts, updateContactStatus };

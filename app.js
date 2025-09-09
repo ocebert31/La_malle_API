@@ -70,6 +70,14 @@ app.use('/favorites', favoritesRoutes);
 app.use('/admin', adminRoutes);
 app.use('/categories', categoriesRoutes);
 app.use('/contact', contactRoutes);
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500).json({
+    message: err.message || "Erreur serveur"
+  });
+});
+
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(errorHandler);
 
