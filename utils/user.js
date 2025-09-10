@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
+const {assert} = require("../utils/errorHandler")
+const bcrypt = require('bcrypt');
 
 function checkConfirmationEmail(user) {
-    if (user.confirmationToken) {
-        throw new ValidationError("Veuillez confirmer votre email avant de vous connecter.");
-    }
+    assert(user.confirmationToken, "Veuillez confirmer votre email avant de vous connecter.", 400)
 }
 
 function generateToken(user) {
@@ -43,14 +43,6 @@ async function saveUser(user) {
     }
 }
 
-function sendResponseForConfirmation(res, result, successMessage, errorMessage) {
-    if (result.success) {
-        res.status(201).json({ message: successMessage, user: result.user });
-    } else {
-        res.status(500).json({ message: errorMessage, error: result.error.message });
-    }
-}
-
 function buildSearchUser(searchQuery) {
     const searchFilter = searchQuery
         ? { $or: [ 
@@ -61,4 +53,9 @@ function buildSearchUser(searchQuery) {
     return searchFilter
 }
 
-module.exports = { checkConfirmationEmail, generateToken, confirmationMessage, updateUserForConfirmation, saveUser, sendResponseForConfirmation, buildSearchUser };
+async function hashPassword(password) {
+    const hash = await bcrypt.hash(password, 10);
+    return hash;
+}
+
+module.exports = { checkConfirmationEmail, generateToken, confirmationMessage, updateUserForConfirmation, saveUser, buildSearchUser, hashPassword };

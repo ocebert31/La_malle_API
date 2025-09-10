@@ -10,13 +10,16 @@ const passwordSchema = Joi.string().min(6).required().messages({
     "string.min": "Le mot de passe doit contenir au moins 6 caractères"
 });
 
+const confirmPasswordField = (ref = "password") =>
+  Joi.string().valid(Joi.ref(ref)).required().messages({
+    "any.only": "Les mots de passe ne correspondent pas",
+    "string.empty": "La confirmation du mot de passe est requise",
+  });
+
 const registrationSchema = Joi.object({
     email: emailSchema,
     password: passwordSchema,
-    confirmPassword: Joi.string().valid(Joi.ref('password')).required().messages({
-        "any.only": "Les mots de passe ne correspondent pas",
-        "string.empty": "La confirmation du mot de passe est requise"
-    })
+    confirmPassword: confirmPasswordField("password"),
 })
 
 const sessionSchema = Joi.object({
@@ -32,10 +35,7 @@ const updateEmailSchema = Joi.object({
 const updatePasswordSchema = Joi.object({
     currentPassword: passwordSchema,
     newPassword: passwordSchema,
-    confirmNewPassword: Joi.string().valid(Joi.ref('newPassword')).required().messages({
-        "any.only": "Les mots de passe ne correspondent pas",
-        "string.empty": "La confirmation du mot de passe est requise"
-    })
+    confirmNewPassword: confirmPasswordField("newPassword"),
 })
 
 const forgotPasswordSchema = Joi.object({
@@ -44,10 +44,7 @@ const forgotPasswordSchema = Joi.object({
 
 const resetPasswordSchema = Joi.object({
     newPassword: passwordSchema,
-    confirmNewPassword: Joi.string().valid(Joi.ref('newPassword')).required().messages({
-        "any.only": "Les mots de passe ne correspondent pas",
-        "string.empty": "La confirmation du mot de passe est requise"
-    })
+    confirmNewPassword: confirmPasswordField("newPassword"),
 })
 
 module.exports = { registrationSchema, sessionSchema, updateEmailSchema, updatePasswordSchema, forgotPasswordSchema, resetPasswordSchema };

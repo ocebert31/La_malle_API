@@ -1,5 +1,5 @@
-const ValidationError = require("./validationError");
 const User = require('../../models/users');
+const {assert} = require('../errorHandler')
 
 async function checkExistingUser(email) {
     const existingUser = await User.findOne({
@@ -8,9 +8,7 @@ async function checkExistingUser(email) {
             { newEmail: email }
         ]
     });
-    if (existingUser) {
-        throw new ValidationError("Cet email est déjà utilisé");
-    }
+    assert(existingUser, "Cet email est déjà utilisé", 400)
 }
 
 module.exports = checkExistingUser;

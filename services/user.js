@@ -1,126 +1,136 @@
-const checkExistingUser = require("../utils/validators/checkExistingUser");
-const { sendConfirmationEmail } = require('../utils/sendConfirmationEmail');
-const { registrationSchema, sessionSchema, updateEmailSchema, updatePasswordSchema, forgotPasswordSchema, resetPasswordSchema } = require("../utils/validators/userSchema")
-const createUser = require("../factories/user")
-const User = require("../models/users");
 const crypto = require('crypto');
-const assert = require("../utils/errorHandler")
-const hashPassword = require("../utils/validators/hashPassword");
+const User = require("../models/users");
+const createUser = require("../factories/user");
+const checkExistingUser = require("../utils/validators/checkExistingUser");
 const confirmPasswordHashMatch = require("../utils/validators/confirmPasswordHashMatch");
 const ensureUserPresence = require("../utils/validators/ensureUserPresence");
-const { checkConfirmationEmail, generateToken, confirmationMessage, updateUserForConfirmation, saveUser, sendResponseForConfirmation, buildSearchUser} = require("../utils/user")
+const { sendConfirmationEmail } = require('../mail/sendConfirmationEmail');
+const { registrationSchema, sessionSchema, updateEmailSchema, updatePasswordSchema, 
+    forgotPasswordSchema, resetPasswordSchema } = require("../validations/userSchema");
+const {  checkConfirmationEmail, generateToken, confirmationMessage, updateUserForConfirmation, 
+    saveUser, buildSearchUser, hashPassword } = require("../utils/user");
+const {validate, assert} = require("../utils/errorHandler")
 
-async function registrationService({ email, password, confirmPassword }) {
-    const { error } = registrationSchema.validate({ email, password, confirmPassword });
-    assert(error, error?.details?.[0].message, 400)
-    await checkExistingUser(email)
-    const user = await createUser(password, email)
+async function registration({ email, password, confirmPassword }) {
+    validate(registrationSchema, { email, password, confirmPassword });
+    await checkExistingUser(email);
+    const user = await createUser(password, email);
     await user.save();
     await sendConfirmationEmail(user, 'signup');
     return user;
 }
 
-async function sessionService({ email, password }) {
-    const { error } = sessionSchema.validate({ email, password });
-    assert(error, error?.details?.[0]?.message, 400);
+async function session({ email, password }) {
+    validate(sessionSchema, { email, password });
     const user = await User.findOne({ email });
-    assert(!user, "Utilisateur inexistant", 404);
+    ensureUserPresence(user);
     assert(user.deleted_at, "Compte supprimé", 403);
     await confirmPasswordHashMatch(password, user);
-    ensureUserPresence(user);
     checkConfirmationEmail(user);
     const token = generateToken(user);
     return { user, token };
 }
 
-async function confirmUserByToken(req, res) {
-    const { token } = req.params;
+async function confirmUserByToken(token) {
     const user = await User.findOne({ confirmationToken: token });
     ensureUserPresence(user);
     const { successMessage, errorMessage } = confirmationMessage(user);
     updateUserForConfirmation(user);
     const result = await saveUser(user);
-    sendResponseForConfirmation(res, result, successMessage, errorMessage);
+    return { result, successMessage, errorMessage };
 }
 
-async function updateAvatarOptions(req) {
-    const userId = req.auth.userId;
-    const { avatarOptions } = req.body;
-     const user = await User.findByIdAndUpdate(
+async function updateAvatarOptions(userId, avatarOptions) {
+    const user = await User.findByIdAndUpdate(
         userId,
         { avatarOptions },
         { new: true }
     );
-    ensureUserPresence(user);  
+    ensureUserPresence(user);
     return user;
 }
 
-async function updateEmail(req) {
-    const { newEmail, currentPassword } = req.body;
-    const { error } = updateEmailSchema.validate({ newEmail, currentPassword });
-    assert(error, error?.details?.[0]?.message, 400);
-    const user = await User.findById(req.auth.userId);
-    await confirmPasswordHashMatch(currentPassword, user)
-    await checkExistingUser(newEmail)
+async function updateEmail(userId, newEmail, currentPassword) {
+    validate(updateEmailSchema, { newEmail, currentPassword });
+    const user = await User.findById(userId);
+    ensureUserPresence(user);
+    await confirmPasswordHashMatch(currentPassword, user);
+    await checkExistingUser(newEmail);
     user.confirmationToken = crypto.randomBytes(20).toString('hex');
     user.newEmail = newEmail;
     await user.save();
     await sendConfirmationEmail(user, 'update');
 }
 
-async function updatePassword(req, res) {
-    const { currentPassword, newPassword, confirmNewPassword } = req.body;
-    const { error } = updatePasswordSchema.validate({ currentPassword, newPassword, confirmNewPassword });
-    assert(error, error?.details?.[0]?.message, 400);
-    const user = await User.findById(req.auth.userId);
+async function updatePassword(userId, currentPassword, newPassword, confirmNewPassword) {
+    validate(updatePasswordSchema, { currentPassword, newPassword, confirmNewPassword });
+    const user = await User.findById(userId);
     ensureUserPresence(user);
-    await confirmPasswordHashMatch(currentPassword, user, res)
-    const hashedPassword = await hashPassword(newPassword);
-    user.password = hashedPassword;
+    await confirmPasswordHashMatch(currentPassword, user);
+    user.password = await hashPassword(newPassword);
     await user.save();
 }
 
-async function forgotPassword(req) {
-    const { email } = req.body;
-    const { error } = forgotPasswordSchema.validate({ email });
-    assert(error, error?.details?.[0]?.message, 400);
-    const user = await User.findOne({ email});
+async function forgotPassword(email) {
+    validate(forgotPasswordSchema, { email });
+    const user = await User.findOne({ email });
     ensureUserPresence(user);
     user.confirmationToken = crypto.randomBytes(20).toString('hex');
     await user.save();
     await sendConfirmationEmail(user, 'forgotPassword');
 }
 
-async function resetPassword(req) {
-    const { token } = req.params;
-    const { newPassword, confirmNewPassword } = req.body;
-    const { error } = resetPasswordSchema.validate({ newPassword, confirmNewPassword });
-    assert(error, error?.details?.[0]?.message, 400);
+async function resetPassword(token, newPassword, confirmNewPassword) {
+    validate(resetPasswordSchema, { newPassword, confirmNewPassword });
     const user = await User.findOne({ confirmationToken: token });
     ensureUserPresence(user);
-    const hashedPassword = await hashPassword(newPassword);
-    user.password = hashedPassword;
+    user.password = await hashPassword(newPassword);
     user.confirmationToken = undefined;
     await user.save();
 }
 
-async function getAllUser(req) {
-    const { page = 1, limit = 10, searchQuery = '' } = req.query;
+async function getAllUser({ page = 1, limit = 10, searchQuery = '' }) {
     const currentPage = parseInt(page, 10);
     const usersLimit = parseInt(limit, 10);
     const skip = (currentPage - 1) * usersLimit;
-    const users = await User.find({deleted_at: null, ...buildSearchUser(searchQuery)})
+    const users = await User.find({ deleted_at: null, ...buildSearchUser(searchQuery) })
         .skip(skip)
         .limit(usersLimit);
-    return { currentPage, usersLimit, users}
+
+    return { currentPage, usersLimit, users };
 }
 
-async function updateUserRole(req) {
-    const { id } = req.params;
-    const { role } = req.body;
-    const user = await User.findByIdAndUpdate(id, { role }, { new: true });
+async function updateUserRole(userId, role) {
+    const user = await User.findByIdAndUpdate(userId, { role }, { new: true });
     ensureUserPresence(user);
-    return { user };
+    return user;
 }
 
-module.exports = { registrationService, sessionService, confirmUserByToken, updateAvatarOptions, updateEmail, updatePassword, forgotPassword, resetPassword, getAllUser, updateUserRole };
+async function userData(userId) {
+    const user = await User.findById(userId).select('-password');
+    ensureUserPresence(user);
+    assert(user.deleted_at, "Compte supprimé", 403);
+    return user;
+}
+
+async function deleteUserByAdmin(userId) {
+    const user = await User.findById(userId);
+    ensureUserPresence(user);
+    user.deleted_at = new Date();
+    await user.save();
+}
+
+module.exports = {
+    registration,
+    session,
+    confirmUserByToken,
+    updateAvatarOptions,
+    updateEmail,
+    updatePassword,
+    forgotPassword,
+    resetPassword,
+    getAllUser,
+    updateUserRole,
+    userData,
+    deleteUserByAdmin,
+};

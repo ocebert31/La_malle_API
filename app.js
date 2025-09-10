@@ -14,7 +14,7 @@ const favoritesRoutes = require('./routes/favorites');
 const adminRoutes = require('./routes/admin')
 const categoriesRoutes = require('./routes/categories')
 const contactRoutes = require('./routes/contact')
-const { purgeDeletedUsers } = require('./controllers/users');
+const { purgeDeletedUsers } = require('./tasks/user');
 const cron = require('node-cron');
 const cors = require('cors');
 

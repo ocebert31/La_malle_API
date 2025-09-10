@@ -1,9 +1,7 @@
-const ValidationError = require("./validationError");
+const {assert} = require("../errorHandler")
 
 function ensureUserPresence(user) {
-    if (!user) {
-        throw new ValidationError("Aucun utilisateur n'a été trouvé");
-    }
+    assert(!user, "Aucun utilisateur n'a été trouvé", 404)
 }
 
 module.exports = ensureUserPresence;

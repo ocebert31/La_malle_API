@@ -1,11 +1,9 @@
-const ValidationError = require("./validationError");
 const bcrypt = require('bcrypt');
+const {assert} = require("../errorHandler")
 
 async function confirmPasswordHashMatch(password, user) {
     const isMatch = await bcrypt.compare(password, user.password); 
-    if (!isMatch) {
-        throw new ValidationError("Mot de passe incorrect.");
-    }
+    assert(!isMatch, "Mot de passe incorrect.", 401)
 }
 
 module.exports = confirmPasswordHashMatch;

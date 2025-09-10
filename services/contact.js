@@ -1,6 +1,6 @@
 const Contact = require('../models/contact');
-const { contactEmail } = require('../utils/contactEmail');
-const assert = require("../utils/errorHandler")
+const { contactEmail } = require('../mail/contactEmail');
+const {assert} = require("../utils/errorHandler")
 
 async function createContact(data) {
     assert(data.rgpd !== true, 'Vous devez accepter le traitement des données.', 400)
