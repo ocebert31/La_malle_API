@@ -5,14 +5,14 @@ const checkExistingUser = require("../utils/validators/checkExistingUser");
 const confirmPasswordHashMatch = require("../utils/validators/confirmPasswordHashMatch");
 const ensureUserPresence = require("../utils/validators/ensureUserPresence");
 const { sendConfirmationEmail } = require('../mail/sendConfirmationEmail');
-const { registrationSchema, sessionSchema, updateEmailSchema, updatePasswordSchema, 
-    forgotPasswordSchema, resetPasswordSchema } = require("../validations/userSchema");
+const { registrationValidation, sessionValidation, updateEmailValidation, updatePasswordValidation, 
+    forgotPasswordValidation, resetPasswordValidation } = require("../validations/userValidation");
 const {  checkConfirmationEmail, generateToken, confirmationMessage, updateUserForConfirmation, 
     saveUser, buildSearchUser, hashPassword } = require("../utils/user");
 const {validate, assert} = require("../utils/errorHandler")
 
 async function registration({ email, password, confirmPassword }) {
-    validate(registrationSchema, { email, password, confirmPassword });
+    validate(registrationValidation, { email, password, confirmPassword });
     await checkExistingUser(email);
     const user = await createUser(password, email);
     await user.save();
@@ -21,7 +21,7 @@ async function registration({ email, password, confirmPassword }) {
 }
 
 async function session({ email, password }) {
-    validate(sessionSchema, { email, password });
+    validate(sessionValidation, { email, password });
     const user = await User.findOne({ email });
     ensureUserPresence(user);
     assert(user.deleted_at, "Compte supprimé", 403);
@@ -51,7 +51,7 @@ async function updateAvatarOptions(userId, avatarOptions) {
 }
 
 async function updateEmail(userId, newEmail, currentPassword) {
-    validate(updateEmailSchema, { newEmail, currentPassword });
+    validate(updateEmailValidation, { newEmail, currentPassword });
     const user = await User.findById(userId);
     ensureUserPresence(user);
     await confirmPasswordHashMatch(currentPassword, user);
@@ -63,7 +63,7 @@ async function updateEmail(userId, newEmail, currentPassword) {
 }
 
 async function updatePassword(userId, currentPassword, newPassword, confirmNewPassword) {
-    validate(updatePasswordSchema, { currentPassword, newPassword, confirmNewPassword });
+    validate(updatePasswordValidation, { currentPassword, newPassword, confirmNewPassword });
     const user = await User.findById(userId);
     ensureUserPresence(user);
     await confirmPasswordHashMatch(currentPassword, user);
@@ -72,7 +72,7 @@ async function updatePassword(userId, currentPassword, newPassword, confirmNewPa
 }
 
 async function forgotPassword(email) {
-    validate(forgotPasswordSchema, { email });
+    validate(forgotPasswordValidation, { email });
     const user = await User.findOne({ email });
     ensureUserPresence(user);
     user.confirmationToken = crypto.randomBytes(20).toString('hex');
@@ -81,7 +81,7 @@ async function forgotPassword(email) {
 }
 
 async function resetPassword(token, newPassword, confirmNewPassword) {
-    validate(resetPasswordSchema, { newPassword, confirmNewPassword });
+    validate(resetPasswordValidation, { newPassword, confirmNewPassword });
     const user = await User.findOne({ confirmationToken: token });
     ensureUserPresence(user);
     user.password = await hashPassword(newPassword);

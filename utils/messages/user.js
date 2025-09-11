@@ -6,4 +6,8 @@ module.exports = {
     PASSWORD_RESET_EMAIL_SENT: "Un e-mail de réinitialisation a été envoyé.",
     PASSWORD_RESET_SUCCESS: "Mot de passe réinitialisé avec succès.",
     USER_DELETED: "Compte marqué comme supprimé",
+    EMAIL_UPDATE_SUCCESS: "Votre adresse e-mail a été mise à jour avec succès.",
+    EMAIL_UPDATE_FAIL: "Erreur lors de la confirmation de l\'adresse e-mail.",
+    ACCOUNT_CREATE_SUCCESS: "Compte confirmé avec succès.",
+    ACCOUNT_CREATE_FAIL: "Erreur lors de la confirmation du compte.",
 };

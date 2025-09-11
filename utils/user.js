@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const {assert} = require("../utils/errorHandler")
 const bcrypt = require('bcrypt');
+const messages = require("../utils/messages/user");
 
 function checkConfirmationEmail(user) {
     assert(user.confirmationToken, "Veuillez confirmer votre email avant de vous connecter.", 400)
@@ -18,13 +19,13 @@ function generateToken(user) {
 function confirmationMessage(user) {
     if (user.email) {
         return {
-            successMessage: 'Votre adresse e-mail a été mise à jour avec succès.',
-            errorMessage: 'Erreur lors de la confirmation de l\'adresse e-mail.'
+            successMessage: messages.EMAIL_UPDATE_SUCCESS,
+            errorMessage: messages.EMAIL_UPDATE_FAIL
         };
     }
     return {
-        successMessage: 'Compte confirmé avec succès.',
-        errorMessage: 'Erreur lors de la confirmation du compte.'
+        successMessage: messages.ACCOUNT_CREATE_SUCCESS,
+        errorMessage: messages.ACCOUNT_CREATE_FAIL
     };
 }
 
