@@ -4,8 +4,9 @@ const serviceController = require('../controllers/services');
 const uploadImage = require('../middlewares/uploadImage');
 const auth = require('../middlewares/authenticateJWT');
 const authenticated = require('../middlewares/requireAuth');
+const requireAdminOrAuthor = require("../middlewares/requireAdminOrAuthor")
 
-router.post('/', auth, authenticated ,uploadImage.single('image'), serviceController.createService);
+router.post('/', auth, authenticated, requireAdminOrAuthor, uploadImage.single('image'), serviceController.createService);
 router.get('/', auth, serviceController.getAllServices);
 router.get('/:id', auth, serviceController.getOneService);
 router.put('/:id', auth, authenticated, uploadImage.single('image'), serviceController.updateService);

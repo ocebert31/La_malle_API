@@ -1,6 +1,6 @@
+const { assert } = require("../utils/errorHandler")
+
 module.exports = (req, res, next) => {
-  if (req.auth.role !== 'admin') {
-    return res.status(403).json({ message: "Vous n'êtes pas admin" });
-  }
+  assert(req.auth.role !== 'admin', "Vous n'êtes pas admin", 401)
   next();
 };

@@ -1,7 +1,6 @@
+const { assert } = require("../utils/errorHandler")
+
 module.exports = (req, res, next) => {
-    if(req.auth) {
-        next();
-    } else {
-        res.status(403).json({message: "unauthorized request" });
-    }
+    assert(!req.auth, "Demande non autorisée", 401)
+    next()
 };

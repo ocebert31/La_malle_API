@@ -3,7 +3,7 @@ const User = require('../models/users');
 const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-names-generator');
 const {hashPassword} = require("../utils/user");
 
-async function createUser(password, email) {
+async function userBuilder(password, email) {
     const pseudo = uniqueNamesGenerator({
         dictionaries: [colors, adjectives, animals],
         length: 3,
@@ -20,4 +20,4 @@ async function createUser(password, email) {
     return user;
 }
 
-module.exports = createUser;
+module.exports = userBuilder;

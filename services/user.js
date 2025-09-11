@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const User = require("../models/users");
-const createUser = require("../factories/user");
+const userBuilder = require("../factories/user");
 const checkExistingUser = require("../utils/validators/checkExistingUser");
 const confirmPasswordHashMatch = require("../utils/validators/confirmPasswordHashMatch");
 const ensureUserPresence = require("../utils/validators/ensureUserPresence");
@@ -14,7 +14,7 @@ const {validate, assert} = require("../utils/errorHandler")
 async function registration({ email, password, confirmPassword }) {
     validate(registrationValidation, { email, password, confirmPassword });
     await checkExistingUser(email);
-    const user = await createUser(password, email);
+    const user = await userBuilder(password, email);
     await user.save();
     await sendConfirmationEmail(user, 'signup');
     return user;
