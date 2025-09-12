@@ -1,6 +1,6 @@
-const favoriteService = require("../services/favorite")
+const createService = require("../services/command/favorite/createService")
 
 exports.createFavoriteService = async (req, res) => {
-    await favoriteService.createFavoriteService(req, res);
+    await createService(req, res);
 };
 

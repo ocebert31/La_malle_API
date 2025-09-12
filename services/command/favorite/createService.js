@@ -1,4 +1,5 @@
-const Favorite = require('../models/favorites');
+const Favorite = require('../../../models/favorites');
+const favoriteFactory = require("../../../factories/favorite")
 
 async function createFavoriteService(req, res) {
     const serviceId = req.body.serviceId;
@@ -12,10 +13,10 @@ async function checkExistingFavoriteService(existingFavoriteService, userId, ser
         await Favorite.deleteOne({ _id: existingFavoriteService._id });
         return res.status(200).json({ message: "Votre service n'est plus dans la liste des favoris" });
     } else {
-        const favorite = new Favorite({ userId, serviceId});
+        const favorite = await favoriteFactory({ userId, serviceId});
         await favorite.save();
         return res.status(201).json({ message: 'Service ajouté dans la liste des favoris', favorite });
     }
 }
 
-module.exports = { createFavoriteService };
+module.exports = createFavoriteService;

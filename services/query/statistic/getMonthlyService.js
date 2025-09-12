@@ -1,4 +1,4 @@
-const Contact = require('../models/contact');
+const Contact = require('../../../models/contact');
 
 async function getMonthlyStats() {
     const stats = await Contact.aggregate([
@@ -34,4 +34,4 @@ async function getMonthlyStats() {
     return stat;
 }
 
-module.exports = { getMonthlyStats };
+module.exports = getMonthlyStats;

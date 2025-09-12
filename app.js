@@ -14,8 +14,6 @@ const favoritesRoutes = require('./routes/favorites');
 const adminRoutes = require('./routes/admin')
 const categoriesRoutes = require('./routes/categories')
 const contactRoutes = require('./routes/contact')
-const { purgeDeletedUsers } = require('./tasks/user');
-const cron = require('node-cron');
 const cors = require('cors');
 
 async function connectToMongoDB() {
@@ -38,12 +36,6 @@ async function removeUserEmailIndex() {
       console.error('Erreur lors de la suppression de l\'index:', error);
     }
 }
-
-// Tous les dimanches à minuit
-cron.schedule('0 0 * * 0', () => {
-  console.log('Lancement automatique de la purge des utilisateurs supprimés...');
-  purgeDeletedUsers();
-});
 
 connectToMongoDB(); 
 

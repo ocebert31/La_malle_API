@@ -1,26 +1,21 @@
-const Service = require('../../models/services');
+const { assert } = require("../../../utils/errorHandler");
+const favorites = require("../../../models/favorites");
+const Service = require('../../../models/services');
+const mongoose = require('mongoose');
 
-async function buildAllServicesAggregation(matchStage, page, limit) {
-    const currentPage = parseInt(page, 10);
-    const servicesLimit = parseInt(limit, 10);
-    const aggregationServicesSteps = [
-        { $match: matchStage },
-        { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'user' } },
-        { $lookup: { from: 'categories', localField: 'categoryId', foreignField: '_id', as: 'category' } },
-        { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
-        { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
-        {
-            $project: {
-                title:1, imageUrl:1, content:1, tags:1, 
-                price:1, createdAt:1, pseudo:'$user.pseudo',
-                categoryId:1, categoryName:'$category.name'
-            }
-        },
-        { $sort: { createdAt: -1 } },
-        { $skip: (currentPage - 1) * servicesLimit },
-        { $limit: servicesLimit }
-    ];
-    return Service.aggregate(aggregationServicesSteps);
+async function getOneService(req) {
+    const userId = req.auth?.userId ? new mongoose.Types.ObjectId(req.auth.userId) : null;
+    const favorite = req.auth ? await favorites.findOne({ userId: req.auth.userId, serviceId: req.params.id }) : null;
+    const matchStage = await serviceFilters(req.params.id)
+    const services = await buildServiceAggregation(matchStage, req.params.id, userId)
+    assert(!services.length, "Service non trouvé", 404)
+    return { ...services[0], favorite };
+}
+
+async function serviceFilters(serviceId) {
+  return {
+    _id: new mongoose.Types.ObjectId(serviceId)
+  }
 }
 
 async function buildServiceAggregation(matchStage, userId = null) {
@@ -54,5 +49,4 @@ async function buildServiceAggregation(matchStage, userId = null) {
     return Service.aggregate(aggregationServiceSteps);
 }
 
-
-module.exports = { buildAllServicesAggregation, buildServiceAggregation };
+module.exports = getOneService;

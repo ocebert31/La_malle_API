@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const User = require('../models/users');
 const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-names-generator');
-const {hashPassword} = require("../utils/user");
+const hashPassword = require("../utils/utils");
 
 async function userBuilder(password, email) {
     const pseudo = uniqueNamesGenerator({

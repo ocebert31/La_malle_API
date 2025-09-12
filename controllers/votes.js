@@ -1,5 +1,6 @@
-const voteService = require("../services/vote")
+const createService = require("../services/command/vote/createService")
+const asyncHandler = require('../middlewares/asyncHandler');
 
-exports.createVote = async (req, res) => {
-    await voteService.createVote(req, res);
-};
+exports.createVote = asyncHandler(async (req, res) => {
+    await createService(req, res);
+});

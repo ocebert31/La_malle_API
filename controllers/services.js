@@ -1,27 +1,31 @@
-const serviceService = require("../services/service")
 const asyncHandler = require('../middlewares/asyncHandler');
+const createService = require("../services/command/service/createService")
+const updateService = require("../services/command/service/updateService")
+const deleteService = require("../services/command/service/deleteService")
+const getAllService = require("../services/query/service/getAllService")
+const getOneService = require("../services/query/service/getOneService")
 
 exports.createService = asyncHandler(async (req, res) => {
-    const service = await serviceService.createService(req);
+    const service = await createService(req);
     return res.status(201).json({ service: service });
 });
 
 exports.updateService = asyncHandler(async (req, res) => {
-    const updatedService = await serviceService.updateService(req);
+    const updatedService = await updateService(req);
     res.status(200).json({ service: updatedService });
 });
 
 exports.deleteService = asyncHandler(async (req, res) => {
-    const deletedService = await serviceService.deleteService(req);
+    const deletedService = await deleteService(req);
     res.status(200).json({ service: deletedService });
 });
 
 exports.getAllServices = asyncHandler(async (req, res) => {
-    const services = await serviceService.getAllServices(req.query, req.auth?.userId);
+    const services = await getAllService(req.query, req.auth?.userId);
     res.status(200).json(services);
 });
 
 exports.getOneService = asyncHandler(async (req, res) => {
-    const service = await serviceService.getOneService(req);
+    const service = await getOneService(req);
     res.status(200).json(service);
 });

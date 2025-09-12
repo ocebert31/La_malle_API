@@ -1,0 +1,42 @@
+const User = require("../../../models/users")
+const ensureUserPresence = require("../../../utils/validators/ensureUserPresence");
+const messages = require("../../../utils/messages/user")
+
+async function confirmUserByToken(token) {
+    const user = await User.findOne({ confirmationToken: token });
+    ensureUserPresence(user);
+    const { successMessage, errorMessage } = confirmationMessage(user);
+    updateUserForConfirmation(user);
+    const result = await saveUser(user);
+    return { result, successMessage, errorMessage };
+}
+
+function confirmationMessage(user) {
+    if (user.email) {
+        return {
+            successMessage: messages.EMAIL_UPDATE_SUCCESS,
+            errorMessage: messages.EMAIL_UPDATE_FAIL
+        };
+    }
+    return {
+        successMessage: messages.ACCOUNT_CREATE_SUCCESS,
+        errorMessage: messages.ACCOUNT_CREATE_FAIL
+    };
+}
+
+function updateUserForConfirmation(user) {
+    user.email = user.newEmail || user.email;
+    user.newEmail = undefined;
+    user.confirmationToken = undefined;
+}
+
+async function saveUser(user) {
+    try {
+        await user.save();
+        return { success: true, user };
+    } catch (error) {
+        return { success: false, error };
+    }
+}
+
+module.exports = confirmUserByToken
