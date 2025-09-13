@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const serviceController = require('../controllers/services');
+const serviceController = require('../controllers/servicesController');
 const uploadImage = require('../middlewares/uploadImage');
 const auth = require('../middlewares/authenticate/authenticateJWT');
 const authenticated = require('../middlewares/permissions/requireAuth');

@@ -1,5 +1,5 @@
-const bcrypt = require('bcrypt');
 const User = require('../models/users');
+const secureHash = require("../utils/security/secureHash")
 
 async function createAdminUser() {
     try {
@@ -17,7 +17,7 @@ async function createAdminUser() {
 }
 
 async function buildAdminFromEnv() {
-    const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
+    const hashedPassword = await secureHash(process.env.ADMIN_PASSWORD);
     return new User({
         pseudo: 'Admin',
         email: process.env.ADMIN_EMAIL,

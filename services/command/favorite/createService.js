@@ -1,5 +1,5 @@
 const Favorite = require('../../../models/favorites');
-const favoriteFactory = require("../../../factories/favorite")
+const favoriteFactory = require("../../../factories/favoriteFactory")
 
 async function createFavoriteService(req, res) {
     const serviceId = req.body.serviceId;

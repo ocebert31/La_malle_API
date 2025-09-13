@@ -2,18 +2,18 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 3001;
 const mongoose = require('mongoose');
-const servicesRoutes = require('./routes/services');
+const servicesRoutes = require('./routes/servicesRoutes');
 const path = require('path');
 const errorHandler = require('./middlewares/errorHandler');
-const usersRoutes = require('./routes/users');
+const usersRoutes = require('./routes/usersRoutes');
 require('dotenv').config()
-const createAdmin = require('./config/initAdmin')
-const commentsRoutes = require('./routes/comment');
-const votesRoutes = require('./routes/votes');
-const favoritesRoutes = require('./routes/favorites');
-const adminRoutes = require('./routes/admin')
-const categoriesRoutes = require('./routes/categories')
-const contactRoutes = require('./routes/contact')
+const createAdmin = require('./config/initializeAdmin')
+const commentsRoutes = require('./routes/commentsRoutes');
+const votesRoutes = require('./routes/votesRoutes');
+const favoritesRoutes = require('./routes/favoritesRoutes');
+const adminRoutes = require('./routes/adminRoutes')
+const categoriesRoutes = require('./routes/categoriesRoutes')
+const contactRoutes = require('./routes/contactsRoutes')
 const cors = require('cors');
 
 async function connectToMongoDB() {

@@ -1,7 +1,7 @@
 const Contact = require("../models/contact");
 const assert = require("../validations/assert");
 
-async function contactBuilder(data) {
+async function contactFactory(data) {
     const contactData = {
         name: data.name,
         firstName: data.firstName,
@@ -18,4 +18,4 @@ async function contactBuilder(data) {
     return new Contact(contactData);
 }
 
-module.exports = contactBuilder;
+module.exports = contactFactory;

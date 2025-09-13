@@ -1,7 +1,7 @@
-const serviceBuilder = require("../../../factories/service");
+const serviceFactory = require("../../../factories/serviceFactory");
 
 async function createService(req) {
-    const service = await serviceBuilder(req)
+    const service = await serviceFactory(req)
     const savedService = await service.save();
     return savedService;
 }

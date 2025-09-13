@@ -1,5 +1,5 @@
 const Vote = require('../../../models/votes');
-const voteFactory = require('../../../factories/vote');
+const voteFactory = require('../../../factories/voteFactory');
 
 async function createVote(req, res) {
     const voteType = req.body.voteType;

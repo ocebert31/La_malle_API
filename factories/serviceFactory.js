@@ -1,7 +1,7 @@
 const Service = require("../models/services")
 const assert = require("../validations/assert")
 
-async function serviceBuilder(req, options = { forUpdate: false }) {
+async function serviceFactory(req, options = { forUpdate: false }) {
     const imageUrl = req.file ? `${req.protocol}://${req.get("host")}/images/${req.file.filename}` : null;
     const tags = await validateAndFormatTags(req.body.tags || []);
     const data = {
@@ -24,4 +24,4 @@ async function validateAndFormatTags(tags) {
     return uniqueTags;
 }
 
-module.exports = serviceBuilder;
+module.exports = serviceFactory;
