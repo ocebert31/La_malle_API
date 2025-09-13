@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const serviceController = require('../controllers/services');
 const uploadImage = require('../middlewares/uploadImage');
-const auth = require('../middlewares/authenticateJWT');
-const authenticated = require('../middlewares/requireAuth');
-const requireAdminOrAuthor = require("../middlewares/requireAdminOrAuthor")
+const auth = require('../middlewares/authenticate/authenticateJWT');
+const authenticated = require('../middlewares/permissions/requireAuth');
+const requireAdminOrAuthor = require("../middlewares/permissions/requireAdminOrAuthor")
 
 router.post('/', auth, authenticated, requireAdminOrAuthor, uploadImage.single('image'), serviceController.createService);
 router.get('/', auth, serviceController.getAllServices);

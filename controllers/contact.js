@@ -1,7 +1,7 @@
 const createService = require("../services/command/contact/createService")
 const updateServiceStatus = require("../services/command/contact/updateServiceStatus")
 const getAllService = require("../services/query/contact/getAllService")
-const asyncHandler = require('../middlewares/asyncHandler');
+const asyncHandler = require("express-async-handler");
 
 exports.createContact = asyncHandler(async (req, res) => {
     const newContact = await createService(req.body);

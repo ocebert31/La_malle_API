@@ -1,5 +1,5 @@
 const User = require("../../../models/users")
-const ensureUserPresence = require("../../../utils/validators/ensureUserPresence");
+const { assert } = require("../../../utils/errorHandler")
 
 async function updateAvatarOptions(userId, avatarOptions) {
     const user = await User.findByIdAndUpdate(
@@ -7,7 +7,7 @@ async function updateAvatarOptions(userId, avatarOptions) {
         { avatarOptions },
         { new: true }
     );
-    ensureUserPresence(user);
+    assert(!user, "Aucun utilisateur n'a été trouvé", 404)
     return user;
 }
 

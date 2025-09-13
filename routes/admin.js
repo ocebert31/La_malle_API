@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/users');
-const authenticated = require('../middlewares/requireAuth');
-const auth = require('../middlewares/authenticateJWT');
+const authenticated = require('../middlewares/permissions/requireAuth');
+const auth = require('../middlewares/authenticate/authenticateJWT');
 const statController = require('../controllers/stat');
-const requireAdmin = require("../middlewares/requireAdmin")
+const requireAdmin = require("../middlewares/permissions/requireAdmin")
 
 router.get('/', auth, authenticated, requireAdmin, adminController.getAllUser);
 router.put('/:id', auth, authenticated, requireAdmin, adminController.updateUserRole);

@@ -1,4 +1,4 @@
-const asyncHandler = require('../middlewares/asyncHandler');
+const asyncHandler = require("express-async-handler");
 const createService = require("../services/command/category/createService")
 const updateService = require("../services/command/category/updateService")
 const deleteService = require("../services/command/category/deleteService")

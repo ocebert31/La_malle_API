@@ -11,14 +11,12 @@ const sendConfirmationEmail = async (user, confirmationType) => {
 
   const mailOptions = {
     from: process.env.SMTP_USER,
-    to: user.newEmail,
     to: confirmationType !== 'forgotPassword' ? user.newEmail : user.email,
     subject: confirmationType !== 'forgotPassword'
       ? 'Confirmez votre adresse email'
       : 'Confirmez afin de réinitialiser votre mot de passe',
     html: html(user, confirmationType)
   };
-  
 
   return transporter.sendMail(mailOptions);
 };

@@ -1,7 +1,5 @@
-const asyncHandler = require('../middlewares/asyncHandler');
+const asyncHandler = require("express-async-handler");
 const messages = require("../utils/messages/user");
-
-
 const registerService = require("../services/command/user/registerService")
 const loginService = require("../services/command/user/loginService")
 const confirmService = require("../services/command/user/confirmService")

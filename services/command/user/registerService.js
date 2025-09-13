@@ -1,5 +1,5 @@
 const {validate} = require("../../../utils/errorHandler")
-const checkExistingUser = require("../../../utils/validators/checkExistingUser");
+const {checkExistingUser} = require("../../../utils/validators/user");
 const userBuilder = require("../../../factories/user");
 const { sendConfirmationEmail } = require('../../../mail/sendConfirmationEmail');
 const { registrationValidation } = require("../../../validations/userValidation");

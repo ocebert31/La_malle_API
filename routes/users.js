@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/users');
-const authenticated = require('../middlewares/requireAuth');
-const auth = require('../middlewares/authenticateJWT');
+const authenticated = require('../middlewares/permissions/requireAuth');
+const auth = require('../middlewares/authenticate/authenticateJWT');
 
 router.post('/registration', userController.registration);
 router.post('/session', userController.session);

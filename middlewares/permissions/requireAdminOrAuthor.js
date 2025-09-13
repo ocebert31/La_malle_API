@@ -1,4 +1,4 @@
-const { assert } = require("../utils/errorHandler")
+const { assert } = require("../../utils/errorHandler")
 
 module.exports = (req, res, next) => {
   assert(req.auth.role !== 'admin' && req.auth.role !== 'author', "Vous n'êtes ni admin ni auteur", 401)

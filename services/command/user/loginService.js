@@ -1,14 +1,13 @@
 const {validate, assert} = require("../../../utils/errorHandler")
 const User = require("../../../models/users")
-const ensureUserPresence = require("../../../utils/validators/ensureUserPresence");
-const confirmPasswordHashMatch = require("../../../utils/validators/confirmPasswordHashMatch");
+const {confirmPasswordHashMatch} = require("../../../utils/validators/user");
 const { sessionValidation } = require("../../../validations/userValidation");
 const jwt = require('jsonwebtoken');
 
 async function session({ email, password }) {
     validate(sessionValidation, { email, password });
     const user = await User.findOne({ email });
-    ensureUserPresence(user);
+    assert(!user, "Aucun utilisateur n'a été trouvé", 404)
     assert(user.deleted_at, "Compte supprimé", 403);
     await confirmPasswordHashMatch(password, user);
     const token = generateToken(user);

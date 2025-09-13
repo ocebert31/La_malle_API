@@ -1,9 +1,9 @@
 const User = require("../../../models/users"); 
-const ensureUserPresence = require("../../../utils/validators/ensureUserPresence");
+const { assert } = require("../../../utils/errorHandler")
 
 async function deleteUserByAdmin(userId) {
     const user = await User.findById(userId);
-    ensureUserPresence(user);
+    assert(!user, "Aucun utilisateur n'a été trouvé", 404)
     user.deleted_at = new Date();
     await user.save();
 }

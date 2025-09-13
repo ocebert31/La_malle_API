@@ -17,24 +17,24 @@ const contactRoutes = require('./routes/contact')
 const cors = require('cors');
 
 async function connectToMongoDB() {
-    try {
-        await mongoose.connect(process.env.CONNECT_MONGO_DB);
-        console.log('Connexion à MongoDB réussie !');
-        await createAdmin();
-        await removeUserEmailIndex();
-    } catch (error) {
-        console.error('Connexion à MongoDB échouée !', error);
-    }
+  try {
+    await mongoose.connect(process.env.CONNECT_MONGO_DB);
+    console.log('Connexion à MongoDB réussie !');
+    await createAdmin();
+    await removeUserEmailIndex();
+  } catch (error) {
+    console.error('Connexion à MongoDB échouée !', error);
+  }
 }
 
 async function removeUserEmailIndex() {
-    const User = mongoose.model('User');
-    try {
-      await User.collection.dropIndex({ email: 1 });
-      console.log('Index supprimé avec succès');
-    } catch (error) {
-      console.error('Erreur lors de la suppression de l\'index:', error);
-    }
+  const User = mongoose.model('User');
+  try {
+    await User.collection.dropIndex({ email: 1 });
+    console.log('Index supprimé avec succès');
+  } catch (error) {
+    console.error('Erreur lors de la suppression de l\'index:', error);
+  }
 }
 
 connectToMongoDB(); 
