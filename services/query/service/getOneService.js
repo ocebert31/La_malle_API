@@ -1,4 +1,4 @@
-const { assert } = require("../../../utils/errorHandler");
+const assert = require("../../../validations/assert");
 const favorites = require("../../../models/favorites");
 const Service = require('../../../models/services');
 const mongoose = require('mongoose');

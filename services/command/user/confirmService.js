@@ -1,6 +1,6 @@
 const User = require("../../../models/users")
 const messages = require("../../../utils/messages/user")
-const { assert } = require("../../../utils/errorHandler")
+const assert = require("../../../validations/assert")
 
 async function confirmUserByToken(token) {
     const user = await User.findOne({ confirmationToken: token });

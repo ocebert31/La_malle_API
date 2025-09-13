@@ -1,4 +1,4 @@
-const {validate} = require("../../../utils/errorHandler")
+const validate = require("../../../validations/validate")
 const {checkExistingUser} = require("../../../utils/validators/user");
 const userBuilder = require("../../../factories/user");
 const { sendConfirmationEmail } = require('../../../mail/sendConfirmationEmail');

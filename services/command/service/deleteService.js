@@ -1,5 +1,5 @@
 const Service = require("../../../models/services")
-const { assert } = require("../../../utils/errorHandler")
+const assert = require("../../../validations/assert")
 const fs = require('fs/promises');
 
 async function deleteService(req) {

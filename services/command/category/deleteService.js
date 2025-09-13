@@ -1,4 +1,4 @@
-const { assert } = require("../../../utils/errorHandler")
+const assert = require("../../../validations/assert")
 const Category = require('../../../models/categories');
 
 async function deleteCategory(id) {

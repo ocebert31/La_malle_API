@@ -1,5 +1,5 @@
 const Service = require("../../../models/services")
-const { assert } = require("../../../utils/errorHandler")
+const assert = require("../../../validations/assert")
 const serviceBuilder = require("../../../factories/service");
 
 async function updateService(req) {

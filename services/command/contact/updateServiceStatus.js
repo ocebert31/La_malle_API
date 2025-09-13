@@ -1,5 +1,5 @@
 const Contact = require('../../../models/contact');
-const {assert} = require("../../../utils/errorHandler");
+const assert = require("../../../validations/assert");
 
 async function updateContactStatus(id, status) {
     const updatedContact = await Contact.findByIdAndUpdate( id.trim(), { status }, { new: true } );

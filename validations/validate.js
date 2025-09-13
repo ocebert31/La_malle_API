@@ -1,10 +1,4 @@
-function assert(context, message, code) {
-    if(context) {
-        const error = new Error(message);
-        error.status = code;
-        throw error;
-    }
-}
+const assert = require("../validations/assert")
 
 function validate(schema, data, customMessage = null, statusCode = 400) {
     const { error } = schema.validate(data);
@@ -14,4 +8,4 @@ function validate(schema, data, customMessage = null, statusCode = 400) {
     }
 }
 
-module.exports = {validate, assert}
+module.exports = validate

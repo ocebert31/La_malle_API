@@ -1,5 +1,5 @@
 const User = require("../../../models/users")
-const { assert } = require("../../../utils/errorHandler")
+const assert = require("../../../validations/assert")
 
 async function updateAvatarOptions(userId, avatarOptions) {
     const user = await User.findByIdAndUpdate(

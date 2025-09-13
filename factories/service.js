@@ -1,5 +1,5 @@
 const Service = require("../models/services")
-const { assert } = require("../utils/errorHandler")
+const assert = require("../validations/assert")
 
 async function serviceBuilder(req, options = { forUpdate: false }) {
     const imageUrl = req.file ? `${req.protocol}://${req.get("host")}/images/${req.file.filename}` : null;

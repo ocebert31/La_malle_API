@@ -1,8 +1,9 @@
-const {validate, assert} = require("../../../utils/errorHandler")
 const User = require("../../../models/users")
 const {confirmPasswordHashMatch} = require("../../../utils/validators/user");
 const { sessionValidation } = require("../../../validations/userValidation");
 const jwt = require('jsonwebtoken');
+const assert = require("../../../validations/assert")
+const validate = require("../../../validations/validate")
 
 async function session({ email, password }) {
     validate(sessionValidation, { email, password });

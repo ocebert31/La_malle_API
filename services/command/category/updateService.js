@@ -1,4 +1,4 @@
-const { assert } = require("../../../utils/errorHandler")
+const assert = require("../../../validations/assert")
 const categoryBuilder = require("../../../factories/category");
 const Category = require('../../../models/categories');
 

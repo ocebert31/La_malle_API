@@ -2,7 +2,8 @@ const crypto = require('crypto');
 const User = require("../../../models/users"); 
 const { sendConfirmationEmail } = require('../../../mail/sendConfirmationEmail');
 const { forgotPasswordValidation } = require("../../../validations/userValidation");
-const {validate, assert} = require("../../../utils/errorHandler")
+const assert = require("../../../validations/assert")
+const validate = require("../../../validations/validate")
 
 async function forgotPassword(email) {
     validate(forgotPasswordValidation, { email });

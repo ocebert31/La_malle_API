@@ -1,5 +1,5 @@
 const User = require('../../models/users');
-const {assert} = require('../errorHandler')
+const assert = require('../../validations/assert')
 const bcrypt = require('bcrypt');
 
 async function checkExistingUser(email) {

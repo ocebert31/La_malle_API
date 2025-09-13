@@ -1,5 +1,5 @@
 const User = require("../../../models/users"); 
-const { assert } = require("../../../utils/errorHandler")
+const assert = require("../../../validations/assert")
 
 async function deleteUserByAdmin(userId) {
     const user = await User.findById(userId);
