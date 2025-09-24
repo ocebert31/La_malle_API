@@ -1,9 +1,9 @@
 const crypto = require('crypto');
 const User = require("../../../models/users"); 
-const { sendConfirmationEmail } = require('../../../mail/sendConfirmationEmail');
 const { forgotPasswordValidation } = require("../../../validations/userValidation");
 const assert = require("../../../validations/assert")
 const validate = require("../../../validations/validate")
+const sendResetPasswordService = require("./sendResetPasswordService")
 
 async function forgotPassword(email) {
     validate(forgotPasswordValidation, { email });
@@ -11,7 +11,7 @@ async function forgotPassword(email) {
     assert(!user, "Aucun utilisateur n'a été trouvé", 404)
     user.confirmationToken = crypto.randomBytes(20).toString('hex');
     await user.save();
-    await sendConfirmationEmail(user, 'forgotPassword');
+    await sendResetPasswordService(user);
 }
 
 module.exports = forgotPassword

@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3001;
@@ -6,7 +7,6 @@ const servicesRoutes = require('./routes/servicesRoutes');
 const path = require('path');
 const errorHandler = require('./middlewares/upload/errorHandler');
 const usersRoutes = require('./routes/usersRoutes');
-require('dotenv').config()
 const createAdmin = require('./config/initializeAdmin')
 const commentsRoutes = require('./routes/commentsRoutes');
 const votesRoutes = require('./routes/votesRoutes');

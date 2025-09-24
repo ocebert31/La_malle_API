@@ -1,7 +1,7 @@
 const validate = require("../../../validations/validate")
 const {checkExistingUser} = require("../../../utils/validators/user");
 const userFactory = require("../../../factories/userFactory");
-const { sendConfirmationEmail } = require('../../../mail/sendConfirmationEmail');
+const sendConfirmationEmail = require('./sendConfirmationEmailService');
 const { registrationValidation } = require("../../../validations/userValidation");
 
 async function registration({ email, password, confirmPassword }) {

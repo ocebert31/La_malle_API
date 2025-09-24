@@ -3,7 +3,7 @@ const transporter = require("../../../utils/email/transportEmail")
 const path = require("path");
 
 const sendContactService = async (newDemande) => {
-  const template = loadTemplate("contactEmail");
+  const template = loadTemplate("contactEmail", "email");
   const html = template(newDemande.toObject());
 
   const mailOptions = {

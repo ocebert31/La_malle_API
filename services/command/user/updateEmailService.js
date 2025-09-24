@@ -1,11 +1,11 @@
 const User = require("../../../models/users")
 const {confirmPasswordHashMatch} = require("../../../utils/validators/user");
 const {checkExistingUser} = require("../../../utils/validators/user");
-const { sendConfirmationEmail } = require('../../../mail/sendConfirmationEmail');
 const crypto = require('crypto');
 const { updateEmailValidation } = require("../../../validations/userValidation");
 const assert = require("../../../validations/assert")
 const validate = require("../../../validations/validate")
+const sendConfirmationEmail = require("./sendConfirmationEmailService")
 
 async function updateEmail(userId, newEmail, currentPassword) {
     validate(updateEmailValidation, { newEmail, currentPassword });
