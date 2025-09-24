@@ -1,10 +1,10 @@
 const contactFactory = require('../../../factories/contactFactory');
-const { contactEmail } = require("../../../mail/contactEmail");
+const sendContactService = require("./sendContactService")
 
 async function createContact(data) {
     const newContact = await contactFactory(data);
     await newContact.save();
-    await contactEmail(newContact);
+    await sendContactService(newContact);
     return newContact;
 }
 

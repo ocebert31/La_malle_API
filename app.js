@@ -4,7 +4,7 @@ const port = process.env.PORT || 3001;
 const mongoose = require('mongoose');
 const servicesRoutes = require('./routes/servicesRoutes');
 const path = require('path');
-const errorHandler = require('./middlewares/errorHandler');
+const errorHandler = require('./middlewares/upload/errorHandler');
 const usersRoutes = require('./routes/usersRoutes');
 require('dotenv').config()
 const createAdmin = require('./config/initializeAdmin')

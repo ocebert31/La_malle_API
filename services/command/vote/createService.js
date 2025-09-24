@@ -26,8 +26,8 @@ function buildVoteQuery({ userId, commentId, serviceId }) {
     return query;
 }
 
-async function addVote(voteData) {
-    const vote = new Vote(voteData);
+async function addVote(voteData) {  
+    const vote = await voteFactory(voteData);
     await vote.save();
     return { action: 'created', message: 'Vote enregistré avec succès', vote };
 }
