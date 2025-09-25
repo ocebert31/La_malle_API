@@ -7,7 +7,7 @@ const sendConfirmationEmail = async (user, confirmationType) => {
     isSignup: confirmationType === 'signup',
     confirmationLink: confirmationLink(user, confirmationType)
   };
-  const template = compileTemplate("confirmationEmail", 'email');
+  const template = compileTemplate("confirmationEmail", 'user');
   const html = template(data);
 
   const mailOptions = {

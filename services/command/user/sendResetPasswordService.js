@@ -2,7 +2,7 @@ const compileTemplate = require("../../../utils/email/compileTemplate")
 const transporter = require("../../../utils/email/transportEmail")
 
 const sendResetPasswordService = async (user) => {
-   const template = compileTemplate("confirmationResetPassword", 'password');
+   const template = compileTemplate("confirmationPassword", 'user');
     const html = template({
     confirmationLink: buildConfirmationLink(user)
     });
