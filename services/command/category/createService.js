@@ -1,8 +1,8 @@
 const categoryFactory = require("../../../factories/categoryFactory");
 
-async function createCategory(name) {
+async function createService(name) {
     const category = await categoryFactory(name);
     return await category.save();
 }
 
-module.exports = createCategory;
+module.exports = createService;

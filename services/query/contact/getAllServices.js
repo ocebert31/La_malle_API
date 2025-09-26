@@ -1,6 +1,6 @@
 const Contact = require('../../../models/contact');
 
-async function getAllContacts({ page = 1, limit = 10, searchQuery = '', urgency, status }) {
+async function getAllServices({ page = 1, limit = 10, searchQuery = '', urgency, status }) {
     const currentPage = parseInt(page, 10);
     const contactsLimit = parseInt(limit, 10);
     const skip = (currentPage - 1) * contactsLimit;
@@ -25,4 +25,4 @@ function buildSearchFilter(searchQuery, urgency, status) {
     return filter;
 }
 
-module.exports = getAllContacts;
+module.exports = getAllServices;

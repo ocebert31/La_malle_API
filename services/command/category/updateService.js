@@ -2,7 +2,7 @@ const assert = require("../../../validations/assert")
 const categoryFactory = require("../../../factories/categoryFactory");
 const Category = require('../../../models/categories');
 
-async function updateCategory(id, name) {
+async function updateService(id, name) {
     const category = await Category.findById(id);
     assert(!category, 'Catégorie non trouvée', 404)
     const updateData = await categoryFactory(name, { forUpdate: true });
@@ -10,4 +10,4 @@ async function updateCategory(id, name) {
     return await category.save();
 }
 
-module.exports = updateCategory;
+module.exports = updateService;

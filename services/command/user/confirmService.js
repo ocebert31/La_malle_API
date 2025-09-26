@@ -2,7 +2,7 @@ const User = require("../../../models/users")
 const messages = require("../../../utils/messages/user")
 const assert = require("../../../validations/assert")
 
-async function confirmUserByToken(token) {
+async function confirmService(token) {
     const user = await User.findOne({ confirmationToken: token });
     assert(!user, "Aucun utilisateur n'a été trouvé", 404)
     const { successMessage, errorMessage } = confirmationMessage(user);
@@ -39,4 +39,4 @@ async function saveUser(user) {
     }
 }
 
-module.exports = confirmUserByToken
+module.exports = confirmService

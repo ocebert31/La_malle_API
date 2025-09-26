@@ -1,7 +1,7 @@
 const Category = require('../../../models/categories');
 
-async function getAllCategories() {
+async function getAllServices() {
     return await Category.find();
 }
 
-module.exports = getAllCategories;
+module.exports = getAllServices;

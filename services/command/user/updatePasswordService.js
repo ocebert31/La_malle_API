@@ -5,7 +5,7 @@ const { updatePasswordValidation } = require("../../../validations/userValidatio
 const assert = require("../../../validations/assert")
 const validate = require("../../../validations/validate")
 
-async function updatePassword(userId, currentPassword, newPassword, confirmNewPassword) {
+async function updatePasswordService(userId, currentPassword, newPassword, confirmNewPassword) {
     validate(updatePasswordValidation, { currentPassword, newPassword, confirmNewPassword });
     const user = await User.findById(userId);
     assert(!user, "Aucun utilisateur n'a été trouvé", 404)
@@ -14,4 +14,4 @@ async function updatePassword(userId, currentPassword, newPassword, confirmNewPa
     await user.save();
 }
 
-module.exports = updatePassword
+module.exports = updatePasswordService;

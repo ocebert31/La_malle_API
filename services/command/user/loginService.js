@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const assert = require("../../../validations/assert")
 const validate = require("../../../validations/validate")
 
-async function session({ email, password }) {
+async function loginService({ email, password }) {
     validate(sessionValidation, { email, password });
     const user = await User.findOne({ email });
     assert(!user, "Aucun utilisateur n'a été trouvé", 404)
@@ -24,4 +24,4 @@ function generateToken(user) {
     return token;
 }
 
-module.exports = session
+module.exports = loginService

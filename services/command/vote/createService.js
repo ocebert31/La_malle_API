@@ -1,7 +1,7 @@
 const Vote = require('../../../models/votes');
 const voteFactory = require('../../../factories/voteFactory');
 
-async function createVote(req, res) {
+async function createService(req, res) {
     const voteType = req.body.voteType;
     const userId = req.auth.userId;
     const commentId = req.body.commentId || null;
@@ -43,4 +43,4 @@ async function switchVote(existingVote, voteData) {
     return { action: 'switched', message: 'Vote modifié avec succès', vote: existingVote };
 }
 
-module.exports = createVote;
+module.exports = createService;

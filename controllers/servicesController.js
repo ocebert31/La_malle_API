@@ -2,7 +2,7 @@ const asyncHandler = require("express-async-handler");
 const createService = require("../services/command/service/createService")
 const updateService = require("../services/command/service/updateService")
 const deleteService = require("../services/command/service/deleteService")
-const getAllService = require("../services/query/service/getAllService")
+const getAllServices = require("../services/query/service/getAllServices")
 const getOneService = require("../services/query/service/getOneService")
 
 exports.createService = asyncHandler(async (req, res) => {
@@ -21,7 +21,7 @@ exports.deleteService = asyncHandler(async (req, res) => {
 });
 
 exports.getAllServices = asyncHandler(async (req, res) => {
-    const services = await getAllService(req.query, req.auth?.userId);
+    const services = await getAllServices(req.query, req.auth?.userId);
     res.status(200).json(services);
 });
 

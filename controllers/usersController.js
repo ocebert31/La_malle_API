@@ -10,7 +10,7 @@ const requestPasswordResetService = require("../services/command/user/requestPas
 const resetPasswordService = require("../services/command/user/resetPasswordService")
 const updateUserRoleService = require("../services/command/user/updateUserRoleService")
 const deleteService = require("../services/command/user/deleteService")
-const getAllService = require("../services/query/user/getAllService")
+const getAllServices = require("../services/query/user/getAllServices")
 const getOneService = require("../services/query/user/getOneService")
 
 exports.registration = asyncHandler(async (req, res) => {
@@ -34,7 +34,7 @@ exports.confirmation = asyncHandler(async (req, res) => {
 
 exports.updateAvatarOptions = asyncHandler(async (req, res) => {
     const user = await updateAvatarService(req.auth.userId, req.body.avatarOptions);
-    res.status(200).json({ message: 'Options d\'avatar mises à jour', user });
+    res.status(200).json({ message: messages.AVATAR_UPDATED, user });
 });
 
 exports.updateEmail = asyncHandler(async (req, res) => {
@@ -58,7 +58,7 @@ exports.resetPassword = asyncHandler(async (req, res) => {
 });
 
 exports.getAllUser = asyncHandler(async (req, res) => {
-    const { currentPage, usersLimit, users } = await getAllService(req.query);
+    const { currentPage, usersLimit, users } = await getAllServices(req.query);
     res.status(200).json({ page: currentPage, limit: usersLimit, users });
 });
 

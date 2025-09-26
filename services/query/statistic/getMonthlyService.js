@@ -1,6 +1,6 @@
 const Contact = require('../../../models/contact');
 
-async function getMonthlyStats() {
+async function getMonthlyService() {
     const stats = await Contact.aggregate([
         {
         $group: {
@@ -34,4 +34,4 @@ async function getMonthlyStats() {
     return stat;
 }
 
-module.exports = getMonthlyStats;
+module.exports = getMonthlyService;

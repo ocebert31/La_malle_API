@@ -1,6 +1,6 @@
 const User = require("../../../models/users"); 
 
-async function getAllUser({ page = 1, limit = 10, searchQuery = '' }) {
+async function getAllServices({ page = 1, limit = 10, searchQuery = '' }) {
     const currentPage = parseInt(page, 10);
     const usersLimit = parseInt(limit, 10);
     const skip = (currentPage - 1) * usersLimit;
@@ -21,4 +21,4 @@ function buildSearchUser(searchQuery) {
     return searchFilter
 }
 
-module.exports = getAllUser
+module.exports = getAllServices;

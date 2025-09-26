@@ -1,7 +1,7 @@
 const Favorite = require('../../../models/favorites');
 const favoriteFactory = require("../../../factories/favoriteFactory")
 
-async function createFavoriteService(req, res) {
+async function createService(req, res) {
     const serviceId = req.body.serviceId;
     const userId = req.auth.userId;
     const existingFavoriteService = await Favorite.findOne({ userId, serviceId });
@@ -19,4 +19,4 @@ async function checkExistingFavoriteService(existingFavoriteService, userId, ser
     }
 }
 
-module.exports = createFavoriteService;
+module.exports = createService;

@@ -1,7 +1,7 @@
 const compileTemplate = require("../../../utils/email/compileTemplate")
 const transporter = require("../../../utils/email/transportEmail")
 
-const sendConfirmationEmail = async (user, confirmationType) => {
+const sendConfirmationEmailService = async (user, confirmationType) => {
   const data = {
     isUpdate: confirmationType === 'update',
     isSignup: confirmationType === 'signup',
@@ -25,4 +25,4 @@ const confirmationLink = (user, confirmationType) => {
   if (confirmationType === 'signup') return `${process.env.FRONTEND_URL}/confirmation/${user.confirmationToken}`;
 };
 
-module.exports = sendConfirmationEmail
+module.exports = sendConfirmationEmailService

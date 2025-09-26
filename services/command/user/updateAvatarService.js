@@ -1,7 +1,7 @@
 const User = require("../../../models/users")
 const assert = require("../../../validations/assert")
 
-async function updateAvatarOptions(userId, avatarOptions) {
+async function updateAvatarService(userId, avatarOptions) {
     const user = await User.findByIdAndUpdate(
         userId,
         { avatarOptions },
@@ -11,4 +11,4 @@ async function updateAvatarOptions(userId, avatarOptions) {
     return user;
 }
 
-module.exports = updateAvatarOptions
+module.exports = updateAvatarService

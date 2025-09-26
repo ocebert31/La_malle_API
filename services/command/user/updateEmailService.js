@@ -7,7 +7,7 @@ const assert = require("../../../validations/assert")
 const validate = require("../../../validations/validate")
 const sendConfirmationEmail = require("./sendConfirmationEmailService")
 
-async function updateEmail(userId, newEmail, currentPassword) {
+async function updateEmailService(userId, newEmail, currentPassword) {
     validate(updateEmailValidation, { newEmail, currentPassword });
     const user = await User.findById(userId);
     assert(!user, "Aucun utilisateur n'a été trouvé", 404);
@@ -20,4 +20,4 @@ async function updateEmail(userId, newEmail, currentPassword) {
 }
 
 
-module.exports = updateEmail
+module.exports = updateEmailService

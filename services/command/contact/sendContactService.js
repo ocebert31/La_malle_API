@@ -1,6 +1,5 @@
 const loadTemplate = require("../../../utils/email/compileTemplate")
 const transporter = require("../../../utils/email/transportEmail")
-const path = require("path");
 
 const sendContactService = async (newDemande) => {
   const template = loadTemplate("contactEmail", "contact");

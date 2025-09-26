@@ -5,7 +5,7 @@ const assert = require("../../../validations/assert")
 const validate = require("../../../validations/validate")
 const sendResetPasswordService = require("./sendResetPasswordService")
 
-async function forgotPassword(email) {
+async function requestPasswordResetService(email) {
     validate(forgotPasswordValidation, { email });
     const user = await User.findOne({ email });
     assert(!user, "Aucun utilisateur n'a été trouvé", 404)
@@ -14,4 +14,4 @@ async function forgotPassword(email) {
     await sendResetPasswordService(user);
 }
 
-module.exports = forgotPassword
+module.exports = requestPasswordResetService;
