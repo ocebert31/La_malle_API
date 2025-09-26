@@ -7,11 +7,11 @@ const sendContactService = async (newDemande) => {
   const html = template(newDemande.toObject());
 
   const mailOptions = {
-      from: process.env.SMTP_USER,
-      to: 'oceanebertrand339@gmail.com',
-      replyTo: newDemande.email,
-      subject: 'Nouvelle demande d\'animateur',
-      html
+    from: process.env.SMTP_USER,
+    to: 'oceanebertrand339@gmail.com',
+    replyTo: newDemande.email,
+    subject: 'Nouvelle demande d\'animateur',
+    html
   };
 
   return transporter.sendMail(mailOptions);
