@@ -29,13 +29,27 @@ async function connectToMongoDB() {
 
 async function removeUserEmailIndex() {
   const User = mongoose.model('User');
+  // try {
+  //   await User.collection.dropIndex({ email: 1 });
+  //   console.log('Index supprimé avec succès');
+  // } catch (error) {
+  //   console.error('Erreur lors de la suppression de l\'index:', error);
+  // }
+
   try {
     await User.collection.dropIndex({ email: 1 });
-    console.log('Index supprimé avec succès');
-  } catch (error) {
-    console.error('Erreur lors de la suppression de l\'index:', error);
+    console.log("Index { email: 1 } supprimé.");
+  } catch (err) {
+    if (err.code === 27) {
+      console.log("ℹ️ Aucun index { email: 1 } à supprimer, on continue...");
+    } else {
+      console.error("Erreur lors de la suppression de l'index:", err);
+    }
   }
+
 }
+
+
 
 connectToMongoDB(); 
 
