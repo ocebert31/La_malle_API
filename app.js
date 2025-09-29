@@ -15,6 +15,7 @@ const adminRoutes = require('./routes/adminRoutes')
 const categoriesRoutes = require('./routes/categoriesRoutes')
 const contactRoutes = require('./routes/contactsRoutes')
 const cors = require('cors');
+//Add gitkeep in image
 
 async function connectToMongoDB() {
   try {
