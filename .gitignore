@@ -1,5 +1,11 @@
 node_modules
 
-images/**/*
+# images/**/*
 
 .env
+
+# Ignore tout le contenu du dossier images
+images/*
+
+# Mais conserve le dossier vide (si tu veux qu'il existe dans le repo)
+!images/.keep
