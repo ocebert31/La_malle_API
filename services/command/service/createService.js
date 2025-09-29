@@ -10,7 +10,6 @@ async function createService(req) {
             tags: req.body.tags,
             categoryId: req.body.categoryId, 
             price: req.body.price, 
-            imageUrl: req.body.imageUrl,
         }
     );
     const service = await serviceFactory(req)

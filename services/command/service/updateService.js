@@ -13,7 +13,6 @@ async function updateService(req) {
       tags: req.body.tags,
       categoryId: req.body.categoryId, 
       price: req.body.price, 
-      imageUrl: req.body.imageUrl,
     }
   );
   const service = await Service.findById(serviceId);

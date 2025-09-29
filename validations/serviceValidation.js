@@ -32,9 +32,6 @@ const baseServiceValidation = {
         "number.min": "Le prix doit être supérieur ou égal à 0",
     }),
 
-    imageUrl: Joi.string().uri().messages({
-        "string.uri": "L'URL de l'image doit être valide",
-    }),
 };
 
 const createServiceValidation = Joi.object({
@@ -43,7 +40,6 @@ const createServiceValidation = Joi.object({
     tags: baseServiceValidation.tags.required(),
     categoryId: baseServiceValidation.categoryId.required().messages({ "any.required": "La catégorie est obligatoire" }),
     price: baseServiceValidation.price.required().messages({ "any.required": "Le prix est obligatoire" }),
-    imageUrl: baseServiceValidation.imageUrl.required().messages({ "any.required": "L'image est obligatoire" }),
 });
 
 const updateServiceValidation = Joi.object({
@@ -52,7 +48,6 @@ const updateServiceValidation = Joi.object({
     tags: baseServiceValidation.tags,
     categoryId: baseServiceValidation.categoryId,
     price: baseServiceValidation.price,
-    imageUrl: baseServiceValidation.imageUrl,
 });
 
 module.exports = { createServiceValidation, updateServiceValidation };
