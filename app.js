@@ -61,7 +61,7 @@ app.use((req, res, next) => {
   next();
 });
 
-const acceptOrigin = ["http://localhost:3000", 'https://lamalle.netlify.app', "https://lamalle-animations-senior.fr"]
+const acceptOrigin = ["http://localhost:3000", 'https://lamalle.netlify.app', "https://lamalle-animations-senior.fr", "https://www.lamalle-animations-senior.fr"]
 
 app.use(cors({
   origin: acceptOrigin,
