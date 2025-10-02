@@ -61,31 +61,20 @@ app.use((req, res, next) => {
   next();
 });
 
-// const acceptOrigin = ["http://localhost:3000", 'https://lamalle.netlify.app', "https://lamalle-animations-senior.fr", "https://www.lamalle-animations-senior.fr"]
-
-// app.use(cors({
-//   origin: acceptOrigin,
-//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//   allowedHeaders: ['Content-Type', 'Authorization']
-// }));
-
-const acceptOrigin = [
-  "http://localhost:3000",
-  "https://lamalle.netlify.app",
-  "https://lamalle-animations-senior.fr",
-  "https://www.lamalle-animations-senior.fr"
-];
+const acceptOrigin = ["http://localhost:3000", 'https://lamalle.netlify.app', "https://lamalle-animations-senior.fr", "https://www.lamalle-animations-senior.fr"]
 
 app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin) return callback(null, true);
-    if (acceptOrigin.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+  // origin: acceptOrigin,
+   origin: function(origin, callback){
+    if(!origin) return callback(null, true);
+
+    if(allowedOrigins.indexOf(origin) === -1){
+      const msg = "CORS policy: Origine non autorisée";
+      return callback(new Error(msg), false);
     }
+    return callback(null, true);
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
