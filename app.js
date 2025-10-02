@@ -50,8 +50,6 @@ async function removeUserEmailIndex() {
 
 }
 
-
-
 connectToMongoDB(); 
 
 app.use(express.json());
@@ -63,9 +61,10 @@ app.use((req, res, next) => {
   next();
 });
 
+const acceptOrigin = ["http://localhost:3000", 'https://lamalle.netlify.app', "https://lamalle-animations-senior.fr"]
+
 app.use(cors({
-  // origin: 'http://localhost:3000',
-  origin: 'https://lamalle.netlify.app',
+  origin: acceptOrigin,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
