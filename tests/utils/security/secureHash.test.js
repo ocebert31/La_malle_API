@@ -1,16 +1,23 @@
 const bcrypt = require('bcrypt');
 const secureHash = require('../../../utils/security/secureHash');
 
-jest.mock('bcrypt');
+jest.mock('bcrypt', () => ({
+  hash: jest.fn(),
+}));
 
-describe('secureHash', () => {
-  test('returns a hashed string different from the original value', async () => {
-    const value = 'password123';
-    const fakeHash = 'hashedPassword123';
+describe('secureHash (unit test with mocked bcrypt)', () => {
+  const passwords = ['password123', 'helloWorld!', '123456'];
+
+  beforeEach(() => {
+    bcrypt.hash.mockClear();
+  });
+
+  test.each(passwords)('should call bcrypt.hash and return the hash for "%s"', async (password) => {
+    const fakeHash = `hashed-${password}`;
     bcrypt.hash.mockResolvedValue(fakeHash);
-    const result = await secureHash(value);
-    expect(bcrypt.hash).toHaveBeenCalledWith(value, 10);
-    expect(result).toBe(fakeHash);
-    expect(result).not.toBe(value);
+    const hash = await secureHash(password);
+    expect(bcrypt.hash).toHaveBeenCalledTimes(1);
+    expect(bcrypt.hash).toHaveBeenCalledWith(password, 10);
+    expect(hash).toBe(fakeHash);
   });
 });
