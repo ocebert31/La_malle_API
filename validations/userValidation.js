@@ -1,50 +1,64 @@
 const Joi = require('joi');
 
-const emailValidation = Joi.string().email().required().messages({
-    "string.empty": "L'email est requis",
-    "string.email": "L'email n'est pas valide"
-});
+const buildStringValidation = (base, messages) => base.required().messages(messages);
 
-const passwordValidation = Joi.string().min(6).required().messages({
-    "string.empty": "Le mot de passe est requis",
-    "string.min": "Le mot de passe doit contenir au moins 6 caractères"
-});
+const buildEmailValidation = () =>
+    buildStringValidation(
+        Joi.string().email(),
+        {
+            'string.empty': "L'email est requis",
+            'string.email': "L'email n'est pas valide",
+            'any.required': "L'email est obligatoire",
+        }
+    );
 
-const confirmPasswordValidation = (ref = "password") =>
-  Joi.string().valid(Joi.ref(ref)).required().messages({
-    "any.only": "Les mots de passe ne correspondent pas",
-    "string.empty": "La confirmation du mot de passe est requise",
-  });
+const buildPasswordValidation = () =>
+    buildStringValidation(
+        Joi.string().min(6),
+        {
+            'string.empty': 'Le mot de passe est requis',
+            'string.min': 'Le mot de passe doit contenir au moins 6 caractères',
+            'any.required': 'Le mot de passe est obligatoire',
+        }
+    );
+
+const buildConfirmPasswordValidation = (ref = 'password') =>
+    Joi.string().empty('').required().valid(Joi.ref(ref)).messages({
+        'string.empty': 'La confirmation du mot de passe est requise',
+        'any.required': 'La confirmation du mot de passe est obligatoire',
+        'any.only': 'Les mots de passe ne correspondent pas',
+    });
+
 
 const registrationValidation = Joi.object({
-    email: emailValidation,
-    password: passwordValidation,
-    confirmPassword: confirmPasswordValidation("password"),
-})
+    email: buildEmailValidation(),
+    password: buildPasswordValidation(),
+    confirmPassword: buildConfirmPasswordValidation('password'),
+});
 
 const sessionValidation = Joi.object({
-    email: emailValidation,
-    password: passwordValidation,
-})
+    email: buildEmailValidation(),
+    password: buildPasswordValidation(),
+});
 
 const updateEmailValidation = Joi.object({
-    newEmail: emailValidation,
-    currentPassword: passwordValidation,
-})
+    newEmail: buildEmailValidation(),
+    currentPassword: buildPasswordValidation(),
+});
 
 const updatePasswordValidation = Joi.object({
-    currentPassword: passwordValidation,
-    newPassword: passwordValidation,
-    confirmNewPassword: confirmPasswordValidation("newPassword"),
-})
+    currentPassword: buildPasswordValidation(),
+    newPassword: buildPasswordValidation(),
+    confirmNewPassword: buildConfirmPasswordValidation('newPassword'),
+});
 
 const forgotPasswordValidation = Joi.object({
-    email: emailValidation,
-})
+    email: buildEmailValidation(),
+});
 
 const resetPasswordValidation = Joi.object({
-    newPassword: passwordValidation,
-    confirmNewPassword: confirmPasswordValidation("newPassword"),
-})
+    newPassword: buildPasswordValidation(),
+    confirmNewPassword: buildConfirmPasswordValidation('newPassword'),
+});
 
 module.exports = { registrationValidation, sessionValidation, updateEmailValidation, updatePasswordValidation, forgotPasswordValidation, resetPasswordValidation };
