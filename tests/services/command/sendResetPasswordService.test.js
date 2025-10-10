@@ -54,7 +54,7 @@ describe('sendResetPasswordService', () => {
         expect(html).toContain('&copy; 2025 La malle. Tous droits réservés.');
     });
 
-    it('should fail on purpose to test CI...', () => {
+    it('should fail on purpose to test 2 CI...', () => {
         expect(true).toBe(false);
     });
 });
