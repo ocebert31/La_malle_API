@@ -53,8 +53,4 @@ describe('sendResetPasswordService', () => {
         expect(html).toContain('style="background-color: #5941FF;'); 
         expect(html).toContain('&copy; 2025 La malle. Tous droits réservés.');
     });
-
-    it('should fail on purpose to test 4 CI...', () => {
-        expect(true).toBe(false);
-    });
 });
