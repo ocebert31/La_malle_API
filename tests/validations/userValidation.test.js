@@ -33,7 +33,6 @@ const invalidUpdatePasswordValidation = [
   { desc: 'newPassword empty', data: { currentPassword: validPassword, newPassword: "", confirmNewPassword: validNewPassword }, expectedMessage: 'Le mot de passe est requis' },
   { desc: 'newPassword too short', data: { currentPassword: validPassword, newPassword: "abc", confirmNewPassword: validNewPassword }, expectedMessage: 'Le mot de passe doit contenir au moins 6 caractères' },
 
-
   { desc: 'passwords mismatch', data: { currentPassword: validPassword, newPassword: validNewPassword, confirmNewPassword: 'wrong' }, expectedMessage: 'Les mots de passe ne correspondent pas' },
   { desc: 'confirmPassword empty', data: { currentPassword: validPassword, newPassword: validNewPassword, confirmNewPassword: "" }, expectedMessage: 'La confirmation du mot de passe est obligatoire' },
   { desc: 'missing confirmPassword', data: { currentPassword: validPassword, newPassword: validNewPassword }, expectedMessage: 'La confirmation du mot de passe est obligatoire' },
