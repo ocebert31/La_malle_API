@@ -57,4 +57,8 @@ describe('sendResetPasswordService', () => {
     it('should fail on purpose to test 2 CI...', () => {
         expect(true).toBe(false);
     });
+
+    it('should fail on purpose to test 3 CI...', () => {
+        expect(true).toBe(false);
+    });
 });
